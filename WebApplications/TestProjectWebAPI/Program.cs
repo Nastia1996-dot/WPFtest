@@ -1,8 +1,18 @@
 
+using Swashbuckle.AspNetCore.SwaggerGen;
+using TestProjectLibrary.Models;
+
 namespace TestProjectWebAPI
 {
+	/// <summary>
+	/// Entry point for the Web API application.
+	/// </summary>
 	public class Program
 	{
+		/// <summary>
+		/// Main method of the application
+		/// </summary>
+		/// <param name="args"></param>
 		public static void Main(string[] args)
 		{
 			var builder = WebApplication.CreateBuilder(args);
@@ -12,7 +22,11 @@ namespace TestProjectWebAPI
 			builder.Services.AddControllers();
 			// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 			builder.Services.AddEndpointsApiExplorer();
-			builder.Services.AddSwaggerGen();
+			builder.Services.AddSwaggerGen(options =>
+			{
+				//options.IncludeXmlComments(Path.ChangeExtension(typeof(CompanyVehicle).Assembly.Location, ".xml"));
+				//options.IncludeXmlComments(Path.ChangeExtension(typeof(Program).Assembly.Location, ".xml"));
+			});
 
 			var app = builder.Build();
 
@@ -32,5 +46,6 @@ namespace TestProjectWebAPI
 
 			app.Run();
 		}
+
 	}
 }
