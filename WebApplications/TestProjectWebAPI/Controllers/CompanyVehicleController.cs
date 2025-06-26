@@ -56,17 +56,26 @@ namespace TestProjectWebAPI.Controllers
 
 		public IActionResult GetVehicleByID(int vehicleID)
 		{
-			var vehicle = VehicleList.FirstOrDefault(v => v.VehicleID == vehicleID);
-
-			if (vehicle == null)
+			//veicolo da mostrare
+			try
 			{
+				if (TryFindVehicleByID(vehicleID, out var vehicle))
+				{
+					return this.Ok(vehicle);
+				}
+
 				return this.NotFound(new NotFoundErrorInfo()
 				{
-
 					ErrorMessage = string.Format(CompanyVehicleLoc.NotFoundMessageFormat, vehicleID)
 				});
 			}
-			return this.Ok(vehicle);
+			catch
+			{
+				return this.StatusCode(500, new InternalServerErrorInfo()
+				{
+					ErrorMessage = string.Format(CompanyVehicleLoc.InternalServerErrorMessage)
+				});
+			}
 		}
 
 		/// <summary>
@@ -109,7 +118,6 @@ namespace TestProjectWebAPI.Controllers
 		{
 			try
 			{
-
 				//validazioni comuni
 				if (string.IsNullOrWhiteSpace(companyVehicle.VehicleType) || companyVehicle.VehicleType.Length > 50)
 				{
@@ -139,10 +147,10 @@ namespace TestProjectWebAPI.Controllers
 					return this.Ok(companyVehicle);
 
 				}
+				//se viene inserito l'id e il veicolo esiste allora aggiorna i dati
 
-				var existingVehicle = VehicleList.FirstOrDefault(v => v.VehicleID == companyVehicle.VehicleID);
-				//se viene inserito l'id e non corrisponde a nessun veicolo esistente parte l'errore
-				if (existingVehicle == null)
+				// Usa TryFindVehicle per verificare se il veicolo esiste
+				if (!TryFindVehicleByID(companyVehicle.VehicleID, out var existingVehicle))
 				{
 					return this.NotFound(new NotFoundErrorInfo
 					{
@@ -150,14 +158,10 @@ namespace TestProjectWebAPI.Controllers
 					});
 				}
 
-				else
-				{
-					//se viene inserito l'id e c'è corrispondenza allora MODIFICA il veicolo
-					existingVehicle.VehicleType = companyVehicle.VehicleType;
-					existingVehicle.VehicleYearOfProduction = companyVehicle.VehicleYearOfProduction;
-				}
+				// Se il veicolo esiste, aggiornalo
+				existingVehicle.VehicleType = companyVehicle.VehicleType;
+				existingVehicle.VehicleYearOfProduction = companyVehicle.VehicleYearOfProduction;
 				return this.Ok(existingVehicle);
-
 			}
 			catch (Exception ex)
 			{
@@ -184,16 +188,42 @@ namespace TestProjectWebAPI.Controllers
 
 		public IActionResult DeleteVehicle(int vehicleID)
 		{
-			var vehicle = VehicleList.FirstOrDefault(v => v.VehicleID == vehicleID);
-			if (vehicle == null)
+			//var vehicle = FindVehicleByID(vehicleID);
+			//try
+			//{
+			//	if (!VehicleExists(vehicleID))
+			//	{
+			//		return this.NotFound(new NotFoundErrorInfo
+			//		{
+			//			ErrorMessage = string.Format(CompanyVehicleLoc.NotFoundMessageFormat, vehicleID)
+			//		});
+			//	}
+			//	VehicleList.Remove(vehicle);
+			//	return this.NoContent();
+			//}
+			//catch
+			//{
+			//	return this.NotFound(new NotFoundErrorInfo
+			//	{
+			//		ErrorMessage = string.Format(CompanyVehicleLoc.NotFoundMessageFormat, vehicleID)
+			//	});
+			//}
+
+			try
+			{
+				if (TryFindVehicleByID(vehicleID, out var vehicle))
+				{
+					VehicleList.Remove(vehicle);
+				}
+					return this.Ok(vehicle);
+			}
+			catch
 			{
 				return this.NotFound(new NotFoundErrorInfo
 				{
 					ErrorMessage = string.Format(CompanyVehicleLoc.NotFoundMessageFormat, vehicleID)
 				});
 			}
-			VehicleList.Remove(vehicle);
-			return this.NoContent();
 		}
 
 		#region PrivateMethods
@@ -205,6 +235,27 @@ namespace TestProjectWebAPI.Controllers
 			//L’intera operazione è eseguita in una singola istruzione a basso livello, in modo sicuro e veloce.
 			return Interlocked.Increment(ref newID);
 		}
+
+		//private static bool VehicleExists(int vehicleID)
+		//{
+		//	return VehicleList.Any(v => v.VehicleID == vehicleID);
+		//}
+
+		//private static CompanyVehicle FindVehicleByID(int vehicleID)
+		//{
+		//	if (VehicleExists(vehicleID))
+		//	{
+		//		return VehicleList.FirstOrDefault(v => v.VehicleID == vehicleID);
+		//	}
+		//	return null;
+		//}
+
+		private static bool TryFindVehicleByID(int vehicleID, out CompanyVehicle vehicleFound)
+		{
+			vehicleFound = VehicleList.FirstOrDefault(v => v.VehicleID == vehicleID);
+			return vehicleFound != null;
+		}
+
 		#endregion
 
 	}

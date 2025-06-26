@@ -61,6 +61,15 @@ namespace TestProjectLibrary.Localization.Models {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to An internal server error occurred.
+        /// </summary>
+        public static string InternalServerErrorMessage {
+            get {
+                return ResourceManager.GetString("InternalServerErrorMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Vehicle with ID {0} was not found.
         /// </summary>
         public static string NotFoundMessageFormat {
