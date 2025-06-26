@@ -1,11 +1,13 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using TestProjectLibrary.Localization.Models;
 using TestProjectLibrary.Models;
 
 namespace TestProjectWebAPI.Controllers
 {
+
 	/// <summary>CompanyVehicle</summary>
 	/// <response code="500">An internal server error has occurred</response>
 	[ApiController]
@@ -53,21 +55,18 @@ namespace TestProjectWebAPI.Controllers
 		[HttpGet("{vehicleID:int}")]
 		[ProducesResponseType<CompanyVehicle[]>(200, "application/json")]
 		[ProducesResponseType(typeof(NotFoundErrorInfo), 404, "application/json")]
-
 		public IActionResult GetVehicleByID(int vehicleID)
 		{
-			//veicolo da mostrare
 			try
 			{
-				if (TryFindVehicleByID(vehicleID, out var vehicle))
+				if (this.TryFindVehicleByID(vehicleID, out var vehicle, out var notFoundResult))
 				{
 					return this.Ok(vehicle);
 				}
-
-				return this.NotFound(new NotFoundErrorInfo()
+				else
 				{
-					ErrorMessage = string.Format(CompanyVehicleLoc.NotFoundMessageFormat, vehicleID)
-				});
+					return notFoundResult;
+				}
 			}
 			catch
 			{
@@ -121,22 +120,14 @@ namespace TestProjectWebAPI.Controllers
 				//validazioni comuni
 				if (string.IsNullOrWhiteSpace(companyVehicle.VehicleType) || companyVehicle.VehicleType.Length > 50)
 				{
-					return this.BadRequest(new ValidationError
-					{
-						PropertyName = nameof(companyVehicle.VehicleType),
-						ErrorMessage = string.Format(CompanyVehicleLoc.VehicleTypeRequiredErrorMessage)
-					});
-
+					return this.ValidationErrorMessage(nameof(companyVehicle.VehicleType), CompanyVehicleLoc.VehicleTypeRequiredErrorMessage);
 				}
 
 				if (companyVehicle.VehicleYearOfProduction < 1900 || companyVehicle.VehicleYearOfProduction > DateTime.Now.Year)
 				{
-					return this.BadRequest(new ValidationError
-					{
-						PropertyName = nameof(companyVehicle.VehicleYearOfProduction),
-						ErrorMessage = string.Format(CompanyVehicleLoc.VehicleYearOfProductionErrorMessageFormat, DateTime.Now.Year)
-					});
+					return this.ValidationErrorMessage(nameof(companyVehicle.VehicleYearOfProduction), string.Format(CompanyVehicleLoc.VehicleYearOfProductionErrorMessageFormat, DateTime.Now.Year));
 				}
+
 				//se non viene inserito l'id allora si procede con l'INSERIMENTO di un nuovo veicolo
 				if (companyVehicle.VehicleID == 0)
 				{
@@ -145,20 +136,15 @@ namespace TestProjectWebAPI.Controllers
 					companyVehicle.VehicleID = newID;
 					VehicleList.Add(companyVehicle);
 					return this.Ok(companyVehicle);
-
 				}
-				//se viene inserito l'id e il veicolo esiste allora aggiorna i dati
 
 				// Usa TryFindVehicle per verificare se il veicolo esiste
-				if (!TryFindVehicleByID(companyVehicle.VehicleID, out var existingVehicle))
+				if (!this.TryFindVehicleByID(companyVehicle.VehicleID, out var existingVehicle, out var notFoundResult))
 				{
-					return this.NotFound(new NotFoundErrorInfo
-					{
-						ErrorMessage = string.Format(CompanyVehicleLoc.NotFoundMessageFormat, companyVehicle.VehicleID)
-					});
+					return notFoundResult;
 				}
 
-				// Se il veicolo esiste, aggiornalo
+				// Se il veicolo esiste, viene aggiornato
 				existingVehicle.VehicleType = companyVehicle.VehicleType;
 				existingVehicle.VehicleYearOfProduction = companyVehicle.VehicleYearOfProduction;
 				return this.Ok(existingVehicle);
@@ -185,44 +171,16 @@ namespace TestProjectWebAPI.Controllers
 		[HttpDelete("{vehicleID:int}")]
 		[ProducesResponseType<NoContentResult>(204, "application/json")]
 		[ProducesResponseType(typeof(NotFound), 404, "application/json")]
-
 		public IActionResult DeleteVehicle(int vehicleID)
 		{
-			//var vehicle = FindVehicleByID(vehicleID);
-			//try
-			//{
-			//	if (!VehicleExists(vehicleID))
-			//	{
-			//		return this.NotFound(new NotFoundErrorInfo
-			//		{
-			//			ErrorMessage = string.Format(CompanyVehicleLoc.NotFoundMessageFormat, vehicleID)
-			//		});
-			//	}
-			//	VehicleList.Remove(vehicle);
-			//	return this.NoContent();
-			//}
-			//catch
-			//{
-			//	return this.NotFound(new NotFoundErrorInfo
-			//	{
-			//		ErrorMessage = string.Format(CompanyVehicleLoc.NotFoundMessageFormat, vehicleID)
-			//	});
-			//}
-
-			try
+			if (this.TryFindVehicleByID(vehicleID, out var vehicle, out var notFoundResult))
 			{
-				if (TryFindVehicleByID(vehicleID, out var vehicle))
-				{
-					VehicleList.Remove(vehicle);
-				}
-					return this.Ok(vehicle);
+				VehicleList.Remove(vehicle);
+				return this.NoContent();
 			}
-			catch
+			else
 			{
-				return this.NotFound(new NotFoundErrorInfo
-				{
-					ErrorMessage = string.Format(CompanyVehicleLoc.NotFoundMessageFormat, vehicleID)
-				});
+				return notFoundResult;
 			}
 		}
 
@@ -236,27 +194,36 @@ namespace TestProjectWebAPI.Controllers
 			return Interlocked.Increment(ref newID);
 		}
 
-		//private static bool VehicleExists(int vehicleID)
-		//{
-		//	return VehicleList.Any(v => v.VehicleID == vehicleID);
-		//}
-
-		//private static CompanyVehicle FindVehicleByID(int vehicleID)
-		//{
-		//	if (VehicleExists(vehicleID))
-		//	{
-		//		return VehicleList.FirstOrDefault(v => v.VehicleID == vehicleID);
-		//	}
-		//	return null;
-		//}
-
-		private static bool TryFindVehicleByID(int vehicleID, out CompanyVehicle vehicleFound)
+		private bool TryFindVehicleByID(int vehicleID, [NotNullWhen(true)] out CompanyVehicle? vehicleFound, [NotNullWhen(false)] out IActionResult? notFoundResult)
 		{
 			vehicleFound = VehicleList.FirstOrDefault(v => v.VehicleID == vehicleID);
-			return vehicleFound != null;
+			if (vehicleFound != null)
+			{
+				notFoundResult = default;
+				return true;
+			}
+			else
+			{
+				notFoundResult = this.NotFound(new NotFoundErrorInfo
+				{
+					ErrorMessage = string.Format(CompanyVehicleLoc.NotFoundMessageFormat, vehicleID)
+				});
+				return false;
+			}
+		}
+
+		private IActionResult ValidationErrorMessage(string propertyName, string errorMessage)
+		{
+
+			return this.BadRequest(new ValidationError
+			{
+				PropertyName = propertyName,
+				ErrorMessage = errorMessage
+			});
 		}
 
 		#endregion
 
 	}
+
 }
