@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using TestProjectLibrary.Localization.Models;
 using TestProjectLibrary.Models;
+using TestProjectLibrary.Models.Enums;
 
 namespace TestProjectWebAPI.Controllers
 {
@@ -26,22 +27,12 @@ namespace TestProjectWebAPI.Controllers
 		{
 		}
 
-		private static readonly string[] CompanyVehicleType = CreateVehicleTypes();
-
-		private static string[] CreateVehicleTypes()
-		{
-			return new[]
-			{
-				"Car", "Truck", "Cruise", "Tractor"
-			};
-		}
-
 		private static List<CompanyVehicle> VehicleList =
 		[
-			new CompanyVehicle(){VehicleID= 1000, VehicleType= "Car", VehicleYearOfProduction= 2005},
-			new CompanyVehicle(){VehicleID= 1001, VehicleType= "Truck", VehicleYearOfProduction= 1999},
-			new CompanyVehicle(){VehicleID= 1002, VehicleType= "Cruise", VehicleYearOfProduction= 2010},
-			new CompanyVehicle(){VehicleID= 1003, VehicleType= "Tractor", VehicleYearOfProduction= 1995},
+			new CompanyVehicle(){VehicleID= 1000, VehicleType= VehicleTypes.Car, VehicleYearOfProduction= 2005},
+			new CompanyVehicle(){VehicleID= 1001, VehicleType= VehicleTypes.Truck, VehicleYearOfProduction= 1999},
+			new CompanyVehicle(){VehicleID= 1002, VehicleType= VehicleTypes.Cruise, VehicleYearOfProduction= 2010},
+			new CompanyVehicle(){VehicleID= 1003, VehicleType= VehicleTypes.Tractor, VehicleYearOfProduction= 1995},
 		];
 
 		/// <summary>
@@ -118,10 +109,6 @@ namespace TestProjectWebAPI.Controllers
 			try
 			{
 				//validazioni comuni
-				if (string.IsNullOrWhiteSpace(companyVehicle.VehicleType) || companyVehicle.VehicleType.Length > 50)
-				{
-					return this.ValidationErrorMessage(nameof(companyVehicle.VehicleType), CompanyVehicleLoc.VehicleTypeRequiredErrorMessage);
-				}
 
 				if (companyVehicle.VehicleYearOfProduction < 1900 || companyVehicle.VehicleYearOfProduction > DateTime.Now.Year)
 				{
@@ -170,7 +157,7 @@ namespace TestProjectWebAPI.Controllers
 		/// <returns></returns>
 		[HttpDelete("{vehicleID:int}")]
 		[ProducesResponseType<NoContentResult>(204, "application/json")]
-		[ProducesResponseType(typeof(NotFound), 404, "application/json")]
+		[ProducesResponseType(typeof(NotFoundErrorInfo), 404, "application/json")]
 		public IActionResult DeleteVehicle(int vehicleID)
 		{
 			if (this.TryFindVehicleByID(vehicleID, out var vehicle, out var notFoundResult))

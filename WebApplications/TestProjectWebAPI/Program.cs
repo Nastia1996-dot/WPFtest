@@ -24,8 +24,8 @@ namespace TestProjectWebAPI
 			builder.Services.AddEndpointsApiExplorer();
 			builder.Services.AddSwaggerGen(options =>
 			{
-				//options.IncludeXmlComments(Path.ChangeExtension(typeof(CompanyVehicle).Assembly.Location, ".xml"));
-				//options.IncludeXmlComments(Path.ChangeExtension(typeof(Program).Assembly.Location, ".xml"));
+				options.IncludeXmlComments(Path.ChangeExtension(typeof(CompanyVehicle).Assembly.Location, ".xml"));
+				options.IncludeXmlComments(Path.ChangeExtension(typeof(Program).Assembly.Location, ".xml"));
 			});
 
 			var app = builder.Build();

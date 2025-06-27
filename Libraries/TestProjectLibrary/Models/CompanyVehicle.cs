@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+using TestProjectLibrary.Models.Enums;
 
 namespace TestProjectLibrary.Models
 {
@@ -24,8 +25,8 @@ namespace TestProjectLibrary.Models
 		/// <summary>
 		/// Type of the company vehicle
 		/// </summary>
-		[Required, MaxLength(50)]
-		public string VehicleType { get; set; } = "";
+		[Required]
+		public VehicleTypes VehicleType { get; set; }
 
 		/// <summary>
 		/// Year the vehicle was registered
