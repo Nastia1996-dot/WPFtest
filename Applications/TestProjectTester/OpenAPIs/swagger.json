@@ -1,0 +1,482 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "TestProjectWebAPI",
+    "version": "1.0"
+  },
+  "paths": {
+    "/vehicle/{vehicleID}": {
+      "get": {
+        "tags": [
+          "CompanyVehicle"
+        ],
+        "summary": "GetVehicleByID",
+        "description": "Get vehicle by its ID",
+        "parameters": [
+          {
+            "name": "vehicleID",
+            "in": "path",
+            "description": "Id of the vehicle to get",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "An internal server error has occurred",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerErrorInfo"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Get successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyVehicle"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundErrorInfo"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "CompanyVehicle"
+        ],
+        "summary": "DeleteVehicle",
+        "description": "Delete a vehicle from the list",
+        "parameters": [
+          {
+            "name": "vehicleID",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "An internal server error has occurred",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerErrorInfo"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "Delete successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NoContentResult"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundErrorInfo"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/vehicle": {
+      "get": {
+        "tags": [
+          "CompanyVehicle"
+        ],
+        "summary": "GetCompanyVehiclesList",
+        "description": "Get a list of the company vehicles",
+        "responses": {
+          "500": {
+            "description": "An internal server error has occurred",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerErrorInfo"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Get successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CompanyVehicle"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "CompanyVehicle"
+        ],
+        "summary": "PostCreateOrUpdateVehicle",
+        "description": "Create a new vehicle if the ID is not present or update an existing one if it exists.",
+        "requestBody": {
+          "description": "The vehicle to create or update",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompanyVehicle"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompanyVehicle"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompanyVehicle"
+              }
+            }
+          }
+        },
+        "responses": {
+          "500": {
+            "description": "An internal server error has occurred",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerErrorInfo"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Post succesful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CompanyVehicle"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A structure containing validation errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFoundErrorInfo"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/weather/forecast": {
+      "get": {
+        "tags": [
+          "WeatherForecast"
+        ],
+        "summary": "GetForecast",
+        "description": "Post a forecast",
+        "responses": {
+          "500": {
+            "description": "An internal server error has occurred",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerErrorInfo"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Returns a list of `WeatherForecast`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WeatherForecast"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "WeatherForecast"
+        ],
+        "summary": "PostForecast",
+        "description": "Post a forecast",
+        "requestBody": {
+          "description": "Forecast of the weather",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WeatherForecast"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WeatherForecast"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/WeatherForecast"
+              }
+            }
+          }
+        },
+        "responses": {
+          "500": {
+            "description": "An internal server error has occurred",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerErrorInfo"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Post successful"
+          }
+        }
+      }
+    },
+    "/weather/forecast/inline": {
+      "post": {
+        "tags": [
+          "WeatherForecast"
+        ],
+        "summary": "PostForecastInline",
+        "description": "Post a forecast with **inline data**",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "description": "Date of the forecast",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "temperatureC",
+            "in": "query",
+            "description": "Temperature in C",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "summary",
+            "in": "query",
+            "description": "Description of the forecast",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "An internal server error has occurred",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerErrorInfo"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Post successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WeatherForecast"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A string containing validation errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CompanyVehicle": {
+        "required": [
+          "vehicleType",
+          "vehicleYearOfProduction"
+        ],
+        "type": "object",
+        "properties": {
+          "vehicleID": {
+            "type": "integer",
+            "description": "ID of the vehicle",
+            "format": "int32"
+          },
+          "vehicleType": {
+            "$ref": "#/components/schemas/VehicleTypes"
+          },
+          "vehicleYearOfProduction": {
+            "type": "integer",
+            "description": "Year the vehicle was registered",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "CompanyVehicle"
+      },
+      "InternalServerErrorInfo": {
+        "type": "object",
+        "properties": {
+          "errorMessage": {
+            "type": "string",
+            "description": "A descriptive error message returned when a 500 Internal Server Error occurs.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents the structure of an internal server error response."
+      },
+      "NoContentResult": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "NotFoundErrorInfo": {
+        "type": "object",
+        "properties": {
+          "errorMessage": {
+            "type": "string",
+            "description": "A descriptive error message returned when a 404 Not Found Error occurs.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents the structure of a not found error response."
+      },
+      "ValidationError": {
+        "type": "object",
+        "properties": {
+          "propertyName": {
+            "type": "string",
+            "description": "The name of the property that failed validation.",
+            "nullable": true
+          },
+          "errorMessage": {
+            "type": "string",
+            "description": "A human-readable description of the validation error.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents a validation error for a specific input property."
+      },
+      "VehicleTypes": {
+        "enum": [
+          "Car",
+          "Truck",
+          "Cruise",
+          "Tractor"
+        ],
+        "type": "string",
+        "description": "Types of company vehicles.\r\n\r\n- `Car`: car\r\n- `Truck`: truck\r\n- `Cruise`: cruise\r\n- `Tractor`: tractor"
+      },
+      "WeatherForecast": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "description": "Date of forecast",
+            "format": "date"
+          },
+          "temperatureC": {
+            "type": "integer",
+            "description": "Temperature in C",
+            "format": "int32"
+          },
+          "temperatureF": {
+            "type": "integer",
+            "description": "Temperature in F",
+            "format": "int32",
+            "readOnly": true
+          },
+          "summary": {
+            "maxLength": 50,
+            "type": "string",
+            "description": "Description of the forecast",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Weather Forecast information"
+      }
+    }
+  }
+}

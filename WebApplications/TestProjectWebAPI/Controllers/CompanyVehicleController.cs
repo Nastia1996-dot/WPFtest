@@ -44,7 +44,7 @@ namespace TestProjectWebAPI.Controllers
 		/// <response code="200">Get successful</response>
 		/// <response code="404">Not found</response>
 		[HttpGet("{vehicleID:int}")]
-		[ProducesResponseType<CompanyVehicle[]>(200, "application/json")]
+		[ProducesResponseType<CompanyVehicle>(200, "application/json")]
 		[ProducesResponseType(typeof(NotFoundErrorInfo), 404, "application/json")]
 		public IActionResult GetVehicleByID(int vehicleID)
 		{
