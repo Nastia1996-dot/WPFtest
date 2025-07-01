@@ -256,6 +256,7 @@ namespace TestProjectTester
 
 		private static void GetManualTest(TestAPIClient client, TextWriter output)
 		{
+			AddSpace();
 			output.WriteLine("------MANUAL TEST------");
 
 			PrintTestTitle("VehicleGet");
@@ -279,6 +280,7 @@ namespace TestProjectTester
 
 		private static async Task GetAutomaticTestAsync(TestAPIClient client, TextWriter output)
 		{
+			AddSpace();
 			output.WriteLine("------AUTOMATIC TEST------");
 
 			output.WriteLine("Results of Input: 1000, 1001, 1002, 1003");
