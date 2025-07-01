@@ -8,7 +8,7 @@ namespace TestProjectTester
 	internal class Program
 	{
 		private static readonly TextWriter output = Console.Out;
-		static void Main(string[] args)
+		static async Task Main(string[] args)
 		{
 			//using serve a garantire che lo stream di output venga rilasciato correttamente quando finisce il blocco 
 			using var output = Console.Out;
@@ -23,7 +23,7 @@ namespace TestProjectTester
 			{
 				
 				//appena running diventa false esco dal ciclo e il programma termina
-				while (MainMenu(client, output))
+				while (await MainMenuAsync(client, output))
 				{
 					BackToMenu(client, output);
 				}
@@ -42,7 +42,7 @@ namespace TestProjectTester
 
 		#region Metodi
 
-		private static bool MainMenu(TestAPIClient client, TextWriter output)
+		private static async Task<bool> MainMenuAsync(TestAPIClient client, TextWriter output)
 		{
 			//pulisce la console
 			Console.Clear();
@@ -62,13 +62,13 @@ namespace TestProjectTester
 			switch (choice)
 			{
 				case 1:
-					VehicleGet(client, output);
+					await VehicleGetAsync(client, output);
 					break;
 				case 2:
 					VehicleListGET(client, output);
 					break;
 				case 3:
-					VehiclePOST(client, output);
+					await VehiclePOSTAsync(client, output);
 					break;
 				case 4:
 					VehicleDELETE(client, output);
@@ -219,7 +219,7 @@ namespace TestProjectTester
 		}
 
 		//-------------GET-----------------------
-		private static void VehicleGet(TestAPIClient client, TextWriter output)
+		private static async Task VehicleGetAsync(TestAPIClient client, TextWriter output)
 		{
 			output.WriteLine();
 			output.WriteLine("Choose if you want to proceed with:");
@@ -240,7 +240,7 @@ namespace TestProjectTester
 						GetAutomaticTest(client, output);
 						break;
 					case 3:
-						MainMenu(client, output);
+						await MainMenuAsync(client, output);
 						break;
 					default:
 						Console.WriteLine("Invalid option: choose another one");
@@ -322,7 +322,7 @@ namespace TestProjectTester
 
 		//----------POST----------------
 
-		private static void VehiclePOST(TestAPIClient client, TextWriter output)
+		private static async Task VehiclePOSTAsync(TestAPIClient client, TextWriter output)
 		{
 			PrintTestTitle("VehiclePOST");
 			MethodDescription("Create or update a vehicle.");
@@ -366,7 +366,7 @@ namespace TestProjectTester
 				VehicleYearOfProduction = year,
 			};
 
-			var result = AsyncHelper.RunSync(() => client.VehiclePOSTAsync(vehicle));
+			var result = await client.VehiclePOSTAsync(vehicle);
 			//se il campo ID non è stato compilato prosegui con la creazione di un nuovo veicolo
 			if (isUpdate)
 			{
