@@ -65,13 +65,13 @@ namespace TestProjectTester
 					await VehicleGetAsync(client, output);
 					break;
 				case 2:
-					VehicleListGET(client, output);
+					await VehicleListGETAsync(client, output);
 					break;
 				case 3:
 					await VehiclePOSTAsync(client, output);
 					break;
 				case 4:
-					VehicleDELETE(client, output);
+					await VehicleDELETEAsync(client, output);
 					break;
 				case 5:
 					Console.WriteLine("Goodbye!");
@@ -163,11 +163,11 @@ namespace TestProjectTester
 			return true;
 		}
 
-		private static void ShowAllVehicles(TestAPIClient client)
+		private static async Task ShowAllVehiclesAsync(TestAPIClient client)
 		{
 			AddSpace();
 			//il metodo client è asincrono, perciò lo converto in sincrono per farlo funzionare qui
-			var vehicles = AsyncHelper.RunSync(() => client.VehicleAllAsync());
+			var vehicles = await client.VehicleAllAsync();
 			if (vehicles != null)
 			{
 
@@ -237,7 +237,7 @@ namespace TestProjectTester
 						GetManualTest(client, output);
 						break;
 					case 2:
-						GetAutomaticTest(client, output);
+						await GetAutomaticTestAsync(client, output);
 						break;
 					case 3:
 						await MainMenuAsync(client, output);
@@ -277,14 +277,14 @@ namespace TestProjectTester
 			}
 		}
 
-		private static void GetAutomaticTest(TestAPIClient client, TextWriter output)
+		private static async Task GetAutomaticTestAsync(TestAPIClient client, TextWriter output)
 		{
 			output.WriteLine("------AUTOMATIC TEST------");
 
 			output.WriteLine("Results of Input: 1000, 1001, 1002, 1003");
 			AddSpace();
 
-			ShowAllVehicles(client);
+			await ShowAllVehiclesAsync(client);
 
 			try
 			{
@@ -302,7 +302,7 @@ namespace TestProjectTester
 		}
 
 		//-----------LIST GET----------------
-		private static void VehicleListGET(TestAPIClient client, TextWriter output)
+		private static async Task VehicleListGETAsync(TestAPIClient client, TextWriter output)
 		{
 			PrintTestTitle("VehicleListGET");
 			MethodDescription("Find and print all vehicles in the system.");
@@ -311,7 +311,7 @@ namespace TestProjectTester
 
 			try
 			{
-				ShowAllVehicles(client);
+				await ShowAllVehiclesAsync(client);
 				SuccessfulMessage(client, output);
 			}
 			catch (ApiException<NotFoundErrorInfo> notFound)
@@ -334,7 +334,7 @@ namespace TestProjectTester
 			bool isUpdate = TryRequestVehicleIDForUpdate(out int? vehicleID);
 
 			AddSpace();
-			Console.Write("Vehicle's type:");
+			Console.Write("Vehicle's type: ");
 			GetUserInput(out var typeInput);
 
 			if (!Enum.TryParse<VehicleTypes>(typeInput, true, out var type))
@@ -344,7 +344,7 @@ namespace TestProjectTester
 			}
 
 			AddSpace();
-			Console.Write("Vehicle's year of production:");
+			Console.Write("Vehicle's year of production: ");
 			GetUserInput(out var yearInput);
 			AddSpace();
 			if (!int.TryParse(yearInput, out var year))
@@ -381,7 +381,7 @@ namespace TestProjectTester
 
 		}
 
-		private static void VehicleDELETE(TestAPIClient client, TextWriter output)
+		private static async Task VehicleDELETEAsync(TestAPIClient client, TextWriter output)
 		{
 			PrintTestTitle("VehicleDELETE");
 			MethodDescription("Delete an existing vehicle.");
@@ -398,7 +398,7 @@ namespace TestProjectTester
 			}
 			try
 			{
-				AsyncHelper.RunSync(() => client.VehicleDELETEAsync(id));
+				await client.VehicleDELETEAsync(id);
 				output.WriteLine();
 				output.WriteLine($"Vehicle with ID {id} deleted successfully.");
 				output.WriteLine();
