@@ -22,7 +22,7 @@ namespace TestProjectLibrary.Models
 		/// <summary>
 		/// Temperature in F
 		/// </summary>
-		public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+		public int TemperatureF => 32 + (int)(this.TemperatureC / 0.5556);
 
 		/// <summary>
 		/// Description of the forecast

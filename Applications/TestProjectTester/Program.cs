@@ -55,8 +55,7 @@ namespace TestProjectTester
 			Console.WriteLine("4. Delete vehicle");
 			Console.WriteLine("5. Exit");
 			AddSpace();
-			int choice;
-			SelectAnOptionBetween(1, 5, out choice);
+			SelectAnOptionBetween(1, 5, out var choice);
 
 			AddSpace();
 
@@ -123,7 +122,7 @@ namespace TestProjectTester
 		private static int SelectAnOptionBetween(int firstOption, int lastOption, out int result)
 		{
 			output.Write($"Select an option between {firstOption} and {lastOption}: ");
-			GetUserInput(out string input);
+			GetUserInput(out var input);
 			bool success = int.TryParse(input, out result);
 			if (!success || result < firstOption || result > lastOption)
 			{
@@ -132,7 +131,7 @@ namespace TestProjectTester
 			return 0;
 
 		}
-		private static void GetUserInput(out string input)
+		private static void GetUserInput(out string? input)
 		{
 			input = Console.ReadLine();
 		}
@@ -141,11 +140,11 @@ namespace TestProjectTester
 			output.WriteLine("New vehicle created successfully:");
 		}
 
-		private static bool RequestVehicleIDForUpdate(out int? vechicleID)
+		private static bool TryRequestVehicleIDForUpdate(out int? vechicleID)
 		{
 			vechicleID = null;
 
-			GetUserInput(out string idInput);
+			GetUserInput(out var idInput);
 
 			//se il campo id è stato compilato prosegui con le verifiche di SINTASSI (alle altre pensa già il server)
 			if (string.IsNullOrWhiteSpace(idInput))
@@ -228,8 +227,7 @@ namespace TestProjectTester
 			output.WriteLine("2. Automatic test");
 			output.WriteLine("3. Back");
 			AddSpace();
-			int result;
-			SelectAnOptionBetween(1, 3, out result);
+			SelectAnOptionBetween(1, 3, out var result);
 
 			try
 			{
@@ -333,11 +331,11 @@ namespace TestProjectTester
 			AddSpace();
 
 			Console.Write("Vehicle ID: ");
-			bool isUpdate = RequestVehicleIDForUpdate(out int? vehicleID);
+			bool isUpdate = TryRequestVehicleIDForUpdate(out int? vehicleID);
 
 			AddSpace();
 			Console.Write("Vehicle's type:");
-			GetUserInput(out string typeInput);
+			GetUserInput(out var typeInput);
 
 			if (!Enum.TryParse<VehicleTypes>(typeInput, true, out var type))
 			{
@@ -347,7 +345,7 @@ namespace TestProjectTester
 
 			AddSpace();
 			Console.Write("Vehicle's year of production:");
-			GetUserInput(out string yearInput);
+			GetUserInput(out var yearInput);
 			AddSpace();
 			if (!int.TryParse(yearInput, out var year))
 			{
@@ -392,7 +390,7 @@ namespace TestProjectTester
 			AddSpace();
 
 			Console.Write("Vehicle ID: ");
-			GetUserInput(out string idInput);
+			GetUserInput(out var idInput);
 			if (!int.TryParse(idInput, out int id))
 			{
 				output.WriteLine("Invalid ID format. Please enter a numeric value.");
