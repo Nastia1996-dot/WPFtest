@@ -8,9 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <OpenApiReference Include="OpenAPIs\swagger.json" Namespace="TestProjectTester.TestProjectAPI" ClassName="TestAPIClient">
-      <SourceUri>https://localhost:7213/swagger/v1/swagger.json</SourceUri>
-    </OpenApiReference>
+    <OpenApiReference Include="TestProjectAPI\OpenApiDefinition\TestProjectApi.json" Namespace="TestProjectTester.TestProjectAPI" ClassName="TestAPIClient" />
   </ItemGroup>
 
   <ItemGroup>
