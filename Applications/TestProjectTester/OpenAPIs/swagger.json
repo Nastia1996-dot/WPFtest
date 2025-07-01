@@ -87,14 +87,7 @@
             }
           },
           "204": {
-            "description": "Delete successful",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/NoContentResult"
-                }
-              }
-            }
+            "description": "Delete successful"
           },
           "404": {
             "description": "Not found",
@@ -184,10 +177,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/CompanyVehicle"
-                  }
+                  "$ref": "#/components/schemas/CompanyVehicle"
                 }
               }
             }
@@ -398,16 +388,6 @@
         },
         "additionalProperties": false,
         "description": "Represents the structure of an internal server error response."
-      },
-      "NoContentResult": {
-        "type": "object",
-        "properties": {
-          "statusCode": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false
       },
       "NotFoundErrorInfo": {
         "type": "object",

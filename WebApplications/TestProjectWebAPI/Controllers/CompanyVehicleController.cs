@@ -101,7 +101,7 @@ namespace TestProjectWebAPI.Controllers
 		/// <response code="404">Not found</response>
 		/// <returns></returns>
 		[HttpPost()]
-		[ProducesResponseType<CompanyVehicle[]>(200, "application/json")]
+		[ProducesResponseType<CompanyVehicle>(200, "application/json")]
 		[ProducesResponseType(typeof(ValidationError), 400, "application/json")]
 		[ProducesResponseType(typeof(NotFoundErrorInfo), 404, "application/json")]
 		public IActionResult PostCreateOrUpdateVehicle([FromBody] CompanyVehicle companyVehicle)
@@ -156,7 +156,7 @@ namespace TestProjectWebAPI.Controllers
 		/// <param name="vehicleID"></param>
 		/// <returns></returns>
 		[HttpDelete("{vehicleID:int}")]
-		[ProducesResponseType<NoContentResult>(204, "application/json")]
+		[ProducesResponseType(204)]
 		[ProducesResponseType(typeof(NotFoundErrorInfo), 404, "application/json")]
 		public IActionResult DeleteVehicle(int vehicleID)
 		{
