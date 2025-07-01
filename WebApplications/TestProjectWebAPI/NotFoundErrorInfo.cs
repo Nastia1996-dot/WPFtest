@@ -3,6 +3,7 @@
 	/// <summary>
 	/// Represents the structure of a not found error response.
 	/// </summary>
+	[Obsolete("Da rimuovere in favore di ErrorResponse")]	
 	public class NotFoundErrorInfo
 	{
 		/// <summary>

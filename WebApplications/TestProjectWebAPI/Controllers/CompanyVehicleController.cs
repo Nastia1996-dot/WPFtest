@@ -157,10 +157,10 @@ namespace TestProjectWebAPI.Controllers
 		/// <returns></returns>
 		[HttpDelete("{vehicleID:int}")]
 		[ProducesResponseType(204)]
-		[ProducesResponseType(typeof(NotFoundErrorInfo), 404, "application/json")]
+		[ProducesResponseType(typeof(ErrorResponse), 404, "application/json")]
 		public IActionResult DeleteVehicle(int vehicleID)
 		{
-			if (this.TryFindVehicleByID(vehicleID, out var vehicle, out var notFoundResult))
+			if (this.TryFindVehicleByID(vehicleID, out var vehicle, out var notFoundResult, false))
 			{
 				VehicleList.Remove(vehicle);
 				return this.NoContent();
@@ -181,7 +181,7 @@ namespace TestProjectWebAPI.Controllers
 			return Interlocked.Increment(ref newID);
 		}
 
-		private bool TryFindVehicleByID(int vehicleID, [NotNullWhen(true)] out CompanyVehicle? vehicleFound, [NotNullWhen(false)] out IActionResult? notFoundResult)
+		private bool TryFindVehicleByID(int vehicleID, [NotNullWhen(true)] out CompanyVehicle? vehicleFound, [NotNullWhen(false)] out IActionResult? notFoundResult, bool useOldNotFound = true)
 		{
 			vehicleFound = VehicleList.FirstOrDefault(v => v.VehicleID == vehicleID);
 			if (vehicleFound != null)
@@ -189,12 +189,17 @@ namespace TestProjectWebAPI.Controllers
 				notFoundResult = default;
 				return true;
 			}
-			else
+			else if (useOldNotFound)
 			{
 				notFoundResult = this.NotFound(new NotFoundErrorInfo
 				{
 					ErrorMessage = string.Format(CompanyVehicleLoc.NotFoundMessageFormat, vehicleID)
 				});
+				return false;
+			}
+			else
+			{
+				notFoundResult = this.NotFound(new ErrorResponse().SetNotFound(string.Format(CompanyVehicleLoc.NotFoundMessageFormat, vehicleID)));
 				return false;
 			}
 		}
