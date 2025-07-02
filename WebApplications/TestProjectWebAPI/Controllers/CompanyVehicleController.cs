@@ -13,7 +13,8 @@ namespace TestProjectWebAPI.Controllers
 	/// <response code="500">An internal server error has occurred</response>
 	[ApiController]
 	[Route("vehicle")]
-	[ProducesResponseType<InternalServerErrorInfo>(500, "application/json")]
+	[ProducesResponseType(typeof(ErrorResponse), 500, "application/json")]
+
 	public class CompanyVehicleController : ControllerBase
 	{
 
@@ -29,11 +30,12 @@ namespace TestProjectWebAPI.Controllers
 
 		private static List<CompanyVehicle> VehicleList =
 		[
-			new CompanyVehicle(){VehicleID= 1000, VehicleType= VehicleTypes.Car, VehicleYearOfProduction= 2005},
-			new CompanyVehicle(){VehicleID= 1001, VehicleType= VehicleTypes.Truck, VehicleYearOfProduction= 1999},
-			new CompanyVehicle(){VehicleID= 1002, VehicleType= VehicleTypes.Cruise, VehicleYearOfProduction= 2010},
-			new CompanyVehicle(){VehicleID= 1003, VehicleType= VehicleTypes.Tractor, VehicleYearOfProduction= 1995},
+			new CompanyVehicle(){VehicleID= 1000, VehicleType= VehicleTypes.Car, VehicleYearOfProduction= 2005, VehicleisActive=true, VehicleKm= 12500},
+			new CompanyVehicle(){VehicleID= 1001, VehicleType= VehicleTypes.Truck, VehicleYearOfProduction= 1999, VehicleisActive= true, VehicleKm= 100000},
+			new CompanyVehicle(){VehicleID= 1002, VehicleType= VehicleTypes.Cruise, VehicleYearOfProduction= 2010, VehicleisActive= false, VehicleWorkingHours=2500},
+			new CompanyVehicle(){VehicleID= 1003, VehicleType= VehicleTypes.Tractor, VehicleYearOfProduction= 1995, VehicleisActive= true, VehicleWorkingHours= 3450},
 		];
+
 
 		/// <summary>
 		/// GetVehicleByID
@@ -45,7 +47,7 @@ namespace TestProjectWebAPI.Controllers
 		/// <response code="404">Not found</response>
 		[HttpGet("{vehicleID:int}")]
 		[ProducesResponseType<CompanyVehicle>(200, "application/json")]
-		[ProducesResponseType(typeof(NotFoundErrorInfo), 404, "application/json")]
+		[ProducesResponseType(typeof(ErrorResponse), 404, "application/json")]
 		public IActionResult GetVehicleByID(int vehicleID)
 		{
 			try
@@ -56,15 +58,14 @@ namespace TestProjectWebAPI.Controllers
 				}
 				else
 				{
+
 					return notFoundResult;
 				}
 			}
-			catch
+			catch (Exception ex)
 			{
-				return this.StatusCode(500, new InternalServerErrorInfo()
-				{
-					ErrorMessage = string.Format(CompanyVehicleLoc.InternalServerErrorMessage)
-				});
+				return this.StatusCode(500, new ErrorResponse().SetInternalServerErrorInfo(ex.Message));
+
 			}
 		}
 
@@ -102,19 +103,58 @@ namespace TestProjectWebAPI.Controllers
 		/// <returns></returns>
 		[HttpPost()]
 		[ProducesResponseType<CompanyVehicle>(200, "application/json")]
-		[ProducesResponseType(typeof(ValidationError), 400, "application/json")]
-		[ProducesResponseType(typeof(NotFoundErrorInfo), 404, "application/json")]
+		[ProducesResponseType(typeof(ErrorResponse), 400, "application/json")]
+		[ProducesResponseType(typeof(ErrorResponse), 404, "application/json")]
 		public IActionResult PostCreateOrUpdateVehicle([FromBody] CompanyVehicle companyVehicle)
 		{
 			try
 			{
+				var errors = new List<ValidationError>();
 				//validazioni comuni
 
 				if (companyVehicle.VehicleYearOfProduction < 1900 || companyVehicle.VehicleYearOfProduction > DateTime.Now.Year)
 				{
-					return this.ValidationErrorMessage(nameof(companyVehicle.VehicleYearOfProduction), string.Format(CompanyVehicleLoc.VehicleYearOfProductionErrorMessageFormat, DateTime.Now.Year));
+					errors.Add(new ValidationError
+					{
+						PropertyName = nameof(companyVehicle.VehicleYearOfProduction),
+						ErrorMessage = string.Format(CompanyVehicleLoc.VehicleYearOfProductionErrorMessageFormat, DateTime.Now.Year)
+					});
 				}
-
+				if (!companyVehicle.VehicleisActive)
+				{
+					errors.Add(new ValidationError
+					{
+						PropertyName= nameof(companyVehicle.VehicleisActive),
+						ErrorMessage=string.Format(CompanyVehicleLoc.VehicleIsActiveErrorMessageFormat)
+					});
+				}
+				if (companyVehicle.VehicleType == VehicleTypes.Car || companyVehicle.VehicleType == VehicleTypes.Truck)
+				{
+					if (!companyVehicle.VehicleKm.HasValue || companyVehicle.VehicleKm <= 0)
+					{
+						errors.Add(new ValidationError
+						{
+							PropertyName = nameof(companyVehicle.VehicleKm),
+							ErrorMessage = string.Format(CompanyVehicleLoc.VehicleKmErrorMessageFormat)
+						});
+					}
+				}
+				if (companyVehicle.VehicleType == VehicleTypes.Cruise || companyVehicle.VehicleType == VehicleTypes.Tractor)
+				{
+					if (!companyVehicle.VehicleWorkingHours.HasValue || companyVehicle.VehicleWorkingHours <= 0)
+					{
+						errors.Add(new ValidationError
+						{
+							PropertyName = nameof(companyVehicle.VehicleWorkingHours),
+							ErrorMessage = string.Format(CompanyVehicleLoc.VehicleWorkingHoursErrorMessageFormat)
+						});
+					}
+				}
+				//se ci sono errori, li restituisco tutti insieme
+				if (errors.Count != 0)
+				{
+					return this.BadRequest(new ErrorResponse().SetValidationErrors(errors));
+				}
 				//se non viene inserito l'id allora si procede con l'INSERIMENTO di un nuovo veicolo
 				if (companyVehicle.VehicleID == 0)
 				{
@@ -134,13 +174,24 @@ namespace TestProjectWebAPI.Controllers
 				// Se il veicolo esiste, viene aggiornato
 				existingVehicle.VehicleType = companyVehicle.VehicleType;
 				existingVehicle.VehicleYearOfProduction = companyVehicle.VehicleYearOfProduction;
+				existingVehicle.VehicleisActive = companyVehicle.VehicleisActive;
+				if (companyVehicle.VehicleType == VehicleTypes.Car || companyVehicle.VehicleType == VehicleTypes.Truck)
+				{
+					existingVehicle.VehicleKm = companyVehicle.VehicleKm;
+
+
+				}
+				if (companyVehicle.VehicleType == VehicleTypes.Cruise || companyVehicle.VehicleType == VehicleTypes.Tractor)
+				{
+					existingVehicle.VehicleWorkingHours = companyVehicle.VehicleWorkingHours;
+				}
 				return this.Ok(existingVehicle);
 			}
 			catch (Exception ex)
 			{
-				return this.StatusCode(500, new InternalServerErrorInfo()
+				return this.StatusCode(500, new ErrorResponse()
 				{
-					ErrorMessage = ex.Message
+					Message = ex.Message,
 				});
 			}
 		}
@@ -160,7 +211,7 @@ namespace TestProjectWebAPI.Controllers
 		[ProducesResponseType(typeof(ErrorResponse), 404, "application/json")]
 		public IActionResult DeleteVehicle(int vehicleID)
 		{
-			if (this.TryFindVehicleByID(vehicleID, out var vehicle, out var notFoundResult, false))
+			if (this.TryFindVehicleByID(vehicleID, out var vehicle, out var notFoundResult))
 			{
 				VehicleList.Remove(vehicle);
 				return this.NoContent();
@@ -181,7 +232,7 @@ namespace TestProjectWebAPI.Controllers
 			return Interlocked.Increment(ref newID);
 		}
 
-		private bool TryFindVehicleByID(int vehicleID, [NotNullWhen(true)] out CompanyVehicle? vehicleFound, [NotNullWhen(false)] out IActionResult? notFoundResult, bool useOldNotFound = true)
+		private bool TryFindVehicleByID(int vehicleID, [NotNullWhen(true)] out CompanyVehicle? vehicleFound, [NotNullWhen(false)] out IActionResult? notFoundResult)
 		{
 			vehicleFound = VehicleList.FirstOrDefault(v => v.VehicleID == vehicleID);
 			if (vehicleFound != null)
@@ -189,31 +240,12 @@ namespace TestProjectWebAPI.Controllers
 				notFoundResult = default;
 				return true;
 			}
-			else if (useOldNotFound)
-			{
-				notFoundResult = this.NotFound(new NotFoundErrorInfo
-				{
-					ErrorMessage = string.Format(CompanyVehicleLoc.NotFoundMessageFormat, vehicleID)
-				});
-				return false;
-			}
 			else
 			{
 				notFoundResult = this.NotFound(new ErrorResponse().SetNotFound(string.Format(CompanyVehicleLoc.NotFoundMessageFormat, vehicleID)));
 				return false;
 			}
 		}
-
-		private IActionResult ValidationErrorMessage(string propertyName, string errorMessage)
-		{
-
-			return this.BadRequest(new ValidationError
-			{
-				PropertyName = propertyName,
-				ErrorMessage = errorMessage
-			});
-		}
-
 		#endregion
 
 	}

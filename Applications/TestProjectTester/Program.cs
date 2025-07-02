@@ -195,16 +195,16 @@ namespace TestProjectTester
 			output.WriteLine();
 		}
 
-		private static void NotFoundErrorMessage(ApiException<NotFoundErrorInfo> notFound, TestAPIClient client, TextWriter output)
+		private static void NotFoundErrorMessage(ApiException<ErrorResponse> notFound, TestAPIClient client, TextWriter output)
 		{
 			output.WriteLine();
 			output.WriteLine("Managed error message:");
-			output.WriteLine(notFound.Result.ErrorMessage);
+			output.WriteLine(notFound.Result.Message);
 			output.WriteLine();
 			output.WriteLine();
 		}
 
-		private static void GenericNotFoundErrorMessage(ApiException<NotFoundErrorInfo> notFound, TestAPIClient client, TextWriter output)
+		private static void GenericNotFoundErrorMessage(ApiException<ErrorResponse> notFound, TestAPIClient client, TextWriter output)
 		{
 			output.WriteLine();
 			output.WriteLine("Generic error message:");
@@ -247,7 +247,7 @@ namespace TestProjectTester
 						break;
 				}
 			}
-			catch (ApiException<NotFoundErrorInfo> notFound)
+			catch (ApiException<ErrorResponse> notFound)
 			{
 				GenericNotFoundErrorMessage(notFound, client, output);
 			}
@@ -263,16 +263,27 @@ namespace TestProjectTester
 
 			MethodDescription("User input read test.");
 
-			MethodInstructions("Please insert vechileID to read: ");
+			MethodInstructions("Please insert vehicle ID to read: ");
 
 			var vehicleID = Convert.ToInt32(Console.In.ReadLine()?.TrimEnd());
 			try
-			{
+			{;
 				var vehicle = client.VehicleGET(vehicleID);
-				output.WriteLine($"{vehicle.VehicleID}: {vehicle.VehicleType} - {vehicle.VehicleYearOfProduction}");
+				output.WriteLine($"ID: {vehicle.VehicleID} ");
+				output.WriteLine($"Type: {vehicle.VehicleType}");
+				output.WriteLine($"Year of production: {vehicle.VehicleYearOfProduction}");
+				output.WriteLine($"Is active: {vehicle.VehicleisActive}");
+				if (vehicle.VehicleType == VehicleTypes.Car || vehicle.VehicleType == VehicleTypes.Truck)
+				{
+					output.WriteLine($"Km: {vehicle.VehicleKm}");
+				}
+				if (vehicle.VehicleType == VehicleTypes.Cruise || vehicle.VehicleType == VehicleTypes.Tractor)
+				{
+					output.WriteLine($"Working hours: {vehicle.VehicleWorkingHours}");
+				}
 				SuccessfulMessage(client, output);
 			}
-			catch (ApiException<NotFoundErrorInfo> notFound)
+			catch (ApiException<ErrorResponse> notFound)
 			{
 				NotFoundErrorMessage(notFound, client, output);
 			}
@@ -297,7 +308,7 @@ namespace TestProjectTester
 				output.WriteLine($"{vehicle.VehicleID}: {vehicle.VehicleType} - {vehicle.VehicleYearOfProduction}");
 				AddSpace();
 			}
-			catch (ApiException<NotFoundErrorInfo> notFound)
+			catch (ApiException<ErrorResponse> notFound)
 			{
 				NotFoundErrorMessage(notFound, client, output);
 			}
@@ -316,7 +327,7 @@ namespace TestProjectTester
 				await ShowAllVehiclesAsync(client);
 				SuccessfulMessage(client, output);
 			}
-			catch (ApiException<NotFoundErrorInfo> notFound)
+			catch (ApiException<ErrorResponse> notFound)
 			{
 				GenericNotFoundErrorMessage(notFound, client, output);
 			}
@@ -405,7 +416,7 @@ namespace TestProjectTester
 				output.WriteLine($"Vehicle with ID {id} deleted successfully.");
 				output.WriteLine();
 			}
-			catch (ApiException<NotFoundErrorInfo> notFound)
+			catch (ApiException<ErrorResponse> notFound)
 			{
 				NotFoundErrorMessage(notFound, client, output);
 			}

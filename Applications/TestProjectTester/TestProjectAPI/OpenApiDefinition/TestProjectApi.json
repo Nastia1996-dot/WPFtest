@@ -30,7 +30,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/InternalServerErrorInfo"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -50,7 +50,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/NotFoundErrorInfo"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -81,7 +81,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/InternalServerErrorInfo"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -94,7 +94,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/NotFoundErrorInfo"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -115,7 +115,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/InternalServerErrorInfo"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -167,7 +167,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/InternalServerErrorInfo"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -187,7 +187,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ValidationError"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -197,7 +197,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/NotFoundErrorInfo"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -218,7 +218,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/InternalServerErrorInfo"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -270,7 +270,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/InternalServerErrorInfo"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -322,7 +322,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/InternalServerErrorInfo"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -355,6 +355,7 @@
     "schemas": {
       "CompanyVehicle": {
         "required": [
+          "vehicleisActive",
           "vehicleType",
           "vehicleYearOfProduction"
         ],
@@ -372,34 +373,55 @@
             "type": "integer",
             "description": "Year the vehicle was registered",
             "format": "int32"
+          },
+          "vehicleisActive": {
+            "type": "boolean",
+            "description": "The vehicle is currently in use or decommissioned"
+          },
+          "vehicleKm": {
+            "type": "number",
+            "description": "Km travelled by the vehicle (if it is a car or truck)",
+            "format": "double",
+            "nullable": true
+          },
+          "vehicleWorkingHours": {
+            "type": "integer",
+            "description": "Hours worked by the vehicle (if it is a cruise or tractor)",
+            "format": "int32",
+            "nullable": true
           }
         },
         "additionalProperties": false,
         "description": "CompanyVehicle"
       },
-      "InternalServerErrorInfo": {
+      "ErrorResponse": {
+        "required": [
+          "message",
+          "status"
+        ],
         "type": "object",
         "properties": {
-          "errorMessage": {
+          "status": {
+            "type": "integer",
+            "description": "HTTP status code (e.g. 404, 400, 500)",
+            "format": "int32"
+          },
+          "message": {
+            "minLength": 1,
             "type": "string",
-            "description": "A descriptive error message returned when a 500 Internal Server Error occurs.",
+            "description": "Error message explaining what went wrong"
+          },
+          "validationErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "description": "Optional list of validation errors.",
             "nullable": true
           }
         },
         "additionalProperties": false,
-        "description": "Represents the structure of an internal server error response."
-      },
-      "NotFoundErrorInfo": {
-        "type": "object",
-        "properties": {
-          "errorMessage": {
-            "type": "string",
-            "description": "A descriptive error message returned when a 404 Not Found Error occurs.",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false,
-        "description": "Represents the structure of a not found error response."
+        "description": "Represents a standard error response returned by the API."
       },
       "ValidationError": {
         "type": "object",

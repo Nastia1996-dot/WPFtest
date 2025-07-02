@@ -118,13 +118,22 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="InternalServerErrorMessage" xml:space="preserve">
-    <value>An internal server error occurred</value>
+    <value>An internal server error occurred.</value>
   </data>
   <data name="NotFoundMessageFormat" xml:space="preserve">
-    <value>Vehicle with ID {0} was not found</value>
+    <value>Vehicle with ID {0} was not found.</value>
+  </data>
+  <data name="VehicleIsActiveErrorMessageFormat" xml:space="preserve">
+    <value>Vehicle activity status must be specified.</value>
+  </data>
+  <data name="VehicleKmErrorMessageFormat" xml:space="preserve">
+    <value>Kilometers must be provided for cars and trucks and must be greater than 0.</value>
   </data>
   <data name="VehicleTypeRequiredErrorMessage" xml:space="preserve">
     <value>Vehicle type is required and must be less than 50 characters.</value>
+  </data>
+  <data name="VehicleWorkingHoursErrorMessageFormat" xml:space="preserve">
+    <value>Working hours must be provided for cruise ships and tractors and must be greater than 0.</value>
   </data>
   <data name="VehicleYearOfProductionErrorMessageFormat" xml:space="preserve">
     <value>Year must be between 1900 and {0}.</value>

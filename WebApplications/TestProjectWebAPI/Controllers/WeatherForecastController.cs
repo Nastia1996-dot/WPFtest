@@ -7,7 +7,7 @@ namespace TestProjectWebAPI.Controllers
 	/// <response code="500">An internal server error has occurred</response>
 	[ApiController]
 	[Route("weather")]
-	[ProducesResponseType<InternalServerErrorInfo>(500, "application/json")]
+	[ProducesResponseType<ErrorResponse>(500, "application/json")]
 	public class WeatherForecastController : ControllerBase
 	{
 		private static readonly string[] Summaries = new[]
@@ -95,7 +95,7 @@ namespace TestProjectWebAPI.Controllers
 			}
 			catch (Exception ex)
 			{
-				return this.StatusCode(500, new InternalServerErrorInfo() { ErrorMessage = ex.Message });
+				return this.StatusCode(500, new ErrorResponse() { Message = ex.Message });
 			}
 		}
 	}

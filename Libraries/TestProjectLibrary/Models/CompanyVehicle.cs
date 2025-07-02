@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Runtime.Intrinsics.X86;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
@@ -34,6 +35,20 @@ namespace TestProjectLibrary.Models
 		[Required]
 		public int VehicleYearOfProduction { get; set; }
 
-		
+		/// <summary>
+		/// The vehicle is currently in use or decommissioned
+		/// </summary>
+		[Required]
+		public bool VehicleisActive { get; set; }
+
+		/// <summary>
+		/// Km travelled by the vehicle (if it is a car or truck)
+		/// </summary>
+		public decimal? VehicleKm {get; set;}
+
+		/// <summary>
+		/// Hours worked by the vehicle (if it is a cruise or tractor)
+		/// </summary>
+		public int? VehicleWorkingHours { get; set; }
 	}
 }

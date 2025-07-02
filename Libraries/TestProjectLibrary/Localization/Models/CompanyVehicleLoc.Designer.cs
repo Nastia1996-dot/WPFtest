@@ -61,7 +61,7 @@ namespace TestProjectLibrary.Localization.Models {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to An internal server error occurred.
+        ///   Looks up a localized string similar to An internal server error occurred..
         /// </summary>
         public static string InternalServerErrorMessage {
             get {
@@ -70,11 +70,29 @@ namespace TestProjectLibrary.Localization.Models {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Vehicle with ID {0} was not found.
+        ///   Looks up a localized string similar to Vehicle with ID {0} was not found..
         /// </summary>
         public static string NotFoundMessageFormat {
             get {
                 return ResourceManager.GetString("NotFoundMessageFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Vehicle activity status must be specified..
+        /// </summary>
+        public static string VehicleIsActiveErrorMessageFormat {
+            get {
+                return ResourceManager.GetString("VehicleIsActiveErrorMessageFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Kilometers must be provided for cars and trucks and must be greater than 0..
+        /// </summary>
+        public static string VehicleKmErrorMessageFormat {
+            get {
+                return ResourceManager.GetString("VehicleKmErrorMessageFormat", resourceCulture);
             }
         }
         
@@ -84,6 +102,15 @@ namespace TestProjectLibrary.Localization.Models {
         public static string VehicleTypeRequiredErrorMessage {
             get {
                 return ResourceManager.GetString("VehicleTypeRequiredErrorMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Working hours must be provided for cruise ships and tractors and must be greater than 0..
+        /// </summary>
+        public static string VehicleWorkingHoursErrorMessageFormat {
+            get {
+                return ResourceManager.GetString("VehicleWorkingHoursErrorMessageFormat", resourceCulture);
             }
         }
         

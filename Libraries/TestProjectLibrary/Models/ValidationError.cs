@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TestProjectLibrary.Models
 {
-
+	
 	/// <summary>
 	/// Represents a validation error for a specific input property.
 	/// </summary>
