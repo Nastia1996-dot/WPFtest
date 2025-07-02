@@ -1,4 +1,5 @@
-﻿using System.Runtime.ConstrainedExecution;
+﻿using Newtonsoft.Json.Converters;
+using System.Runtime.ConstrainedExecution;
 using System.Text;
 using System.Xml.Linq;
 using TestProjectTester.TestProjectAPI;
@@ -21,7 +22,7 @@ namespace TestProjectTester
 
 			try
 			{
-				
+
 				//appena running diventa false esco dal ciclo e il programma termina
 				while (await MainMenuAsync(client, output))
 				{
@@ -108,7 +109,7 @@ namespace TestProjectTester
 		{
 			output.WriteLine();
 			output.Write(instructions);
-			
+
 		}
 
 		private static void SuccessfulMessage(TestAPIClient client, TextWriter output)
@@ -173,14 +174,46 @@ namespace TestProjectTester
 
 				foreach (var v in vehicles)
 				{
-					output.WriteLine($"{v.VehicleID}: {v.VehicleType} - {v.VehicleYearOfProduction}");
+					output.WriteLine($"ID: {v.VehicleID} ");
+					output.WriteLine($"Type: {v.VehicleType}");
+					output.WriteLine($"Year of production: {v.VehicleYearOfProduction}");
+					output.WriteLine($"Is active: {v.VehicleisActive}");
+					if (v.VehicleType == VehicleTypes.Car || v.VehicleType == VehicleTypes.Truck)
+					{
+						output.WriteLine($"Km: {v.VehicleKm}");
+					}
+					if (v.VehicleType == VehicleTypes.Cruise || v.VehicleType == VehicleTypes.Tractor)
+					{
+						output.WriteLine($"Working hours: {v.VehicleWorkingHours}");
+					}
+					AddSpace();
+					AddSpace();
 				}
 			}
 		}
+
+		private static void PrintVehicleDetails(CompanyVehicle result, TextWriter output)
+		{
+			AddSpace();
+			output.WriteLine($"ID: {result.VehicleID} ");
+			output.WriteLine($"Type: {result.VehicleType}");
+			output.WriteLine($"Year of production: {result.VehicleYearOfProduction}");
+			output.WriteLine($"Is active: {result.VehicleisActive}");
+			if (result.VehicleType == VehicleTypes.Car || result.VehicleType == VehicleTypes.Truck)
+			{
+				output.WriteLine($"Km: {result.VehicleKm}");
+			}
+			if (result.VehicleType == VehicleTypes.Cruise || result.VehicleType == VehicleTypes.Tractor)
+			{
+				output.WriteLine($"Working hours: {result.VehicleWorkingHours}");
+			}
+		}
+
 		private static void VehicleUpdatedMessage()
 		{
 			output.WriteLine("Vehicle updated successfully:");
 		}
+
 		private static void ApiFailureErrorMessage(ApiException apiEx, TestAPIClient client, TextWriter output)
 		{
 			output.WriteLine();
@@ -267,20 +300,10 @@ namespace TestProjectTester
 
 			var vehicleID = Convert.ToInt32(Console.In.ReadLine()?.TrimEnd());
 			try
-			{;
-				var vehicle = client.VehicleGET(vehicleID);
-				output.WriteLine($"ID: {vehicle.VehicleID} ");
-				output.WriteLine($"Type: {vehicle.VehicleType}");
-				output.WriteLine($"Year of production: {vehicle.VehicleYearOfProduction}");
-				output.WriteLine($"Is active: {vehicle.VehicleisActive}");
-				if (vehicle.VehicleType == VehicleTypes.Car || vehicle.VehicleType == VehicleTypes.Truck)
-				{
-					output.WriteLine($"Km: {vehicle.VehicleKm}");
-				}
-				if (vehicle.VehicleType == VehicleTypes.Cruise || vehicle.VehicleType == VehicleTypes.Tractor)
-				{
-					output.WriteLine($"Working hours: {vehicle.VehicleWorkingHours}");
-				}
+			{
+				;
+				var result = client.VehicleGET(vehicleID);
+				PrintVehicleDetails(result, output);
 				SuccessfulMessage(client, output);
 			}
 			catch (ApiException<ErrorResponse> notFound)
@@ -356,6 +379,7 @@ namespace TestProjectTester
 				return;
 			}
 
+
 			AddSpace();
 			Console.Write("Vehicle's year of production: ");
 			GetUserInput(out var yearInput);
@@ -371,12 +395,64 @@ namespace TestProjectTester
 				output.WriteLine($"Invalid year. Year must be between 1900 and {currentYear}.");
 				return;
 			}
+
+			AddSpace();
+			Console.WriteLine("Is vehicle active: ");
+			Console.WriteLine("1. True ");
+			Console.WriteLine("2. False ");
+			SelectAnOptionBetween(1, 2, out int activeChoice);
+
+			bool isActive = activeChoice == 1;
+			
+			if (activeChoice != 1 && activeChoice != 2 )
+			{
+				output.WriteLine("Invalid choice. Choose between 1 and 2");
+				return;
+			}
+
+			AddSpace();
+			double vehicleKm = 0;
+			int vehicleWorkingHours = 0;
+
+			if (type == VehicleTypes.Car || type == VehicleTypes.Truck)
+			{
+				Console.WriteLine("Vehicle's kilometers (must be > 0: ");
+				GetUserInput(out var kmInput);
+				if (!double.TryParse(kmInput, out vehicleKm) || vehicleKm < 0)
+				{
+					output.WriteLine("Invalid km. Must be a number greater than 0");
+					return;
+				}
+				//se il veicolo aggiornato ha il campo working hours è incompatibile e viene azzerato in favore del campo km
+				if (isUpdate)
+				{
+					vehicleWorkingHours = 0;
+				}
+			}
+			if (type == VehicleTypes.Cruise || type == VehicleTypes.Tractor)
+			{
+				Console.Write("Enter working hours (must be > 0): ");
+				GetUserInput(out var hoursInput);
+				if (!int.TryParse(hoursInput, out vehicleWorkingHours) || vehicleWorkingHours <= 0)
+				{
+					output.WriteLine("Invalid working hours. Must be an integer greater than 0.");
+					return;
+				}
+				if (isUpdate)
+				{
+					vehicleKm = 0;
+				}
+			}
+
 			//creo oggetto e chiamo API
 			var vehicle = new CompanyVehicle
 			{
 				VehicleID = vehicleID ?? 0, // se è null, la API lo interpreta come nuovo
 				VehicleType = type,
 				VehicleYearOfProduction = year,
+				VehicleisActive = isActive,
+				VehicleKm = vehicleKm,
+				VehicleWorkingHours = vehicleWorkingHours,
 			};
 
 			var result = await client.VehiclePOSTAsync(vehicle);
@@ -390,8 +466,7 @@ namespace TestProjectTester
 				VehicleCreatedMessage();
 			}
 
-			output.WriteLine($"{result.VehicleID}: {result.VehicleType} - {result.VehicleYearOfProduction}");
-
+			PrintVehicleDetails(result, output);
 		}
 
 		private static async Task VehicleDELETEAsync(TestAPIClient client, TextWriter output)
