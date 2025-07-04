@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Converters;
 using System;
 using System.ComponentModel.Design;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.ConstrainedExecution;
@@ -580,9 +581,16 @@ namespace TestProjectTester
 			{
 				//salva l'indice per evitare che tutti i thread ricevano lo stesso i
 				int threadIndex = i;
-				var thread = new Thread(() => DoSomeWork(client, threadIndex, numOfAttempts));
+				var thread = new Thread(() => AsyncHelper.RunSync(() => DoSomeWorkAsync(client, threadIndex, numOfAttempts)))
+				{
+					Name = $"Test{i}",
+				};
 				threads.Add(thread);
 			}
+
+			var startedAt = DateTime.Now;
+			var timer = new Stopwatch();
+			timer.Start();
 			foreach (var thread in threads)
 			{
 				thread.Start();
@@ -592,18 +600,19 @@ namespace TestProjectTester
 				//aspetta che tutti i thread abbiano finito di lavorare prima di proseguire
 				thread.Join();
 			}
-
-			string message = "All threads completed.";
-			UpdateLogFile(message);
+			timer.Stop();
+			UpdateLogFile($"All threads completed in DateTime: {DateTime.Now.Subtract(startedAt)}");
+			UpdateLogFile($"All threads completed in DateTime: {timer.Elapsed}");
 		}
-		private static async void DoSomeWork(TestAPIClient client, int threadId, int attempts)
+
+		private static async Task DoSomeWorkAsync(TestAPIClient client, int threadId, int attempts)
 		{
 			//ogni thread fa un ciclo pari al numero di tentativi
 			for (int i = 0; i < attempts; i++)
 			{
 				var vehicle = new CompanyVehicle
 				{
-					VehicleID = 0, 
+					VehicleID = 0,
 					VehicleType = VehicleTypes.Car,
 					VehicleYearOfProduction = 2006,
 					VehicleisActive = true,
