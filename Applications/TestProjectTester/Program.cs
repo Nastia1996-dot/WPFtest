@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.ConstrainedExecution;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using TestProjectTester.TestProjectAPI;
 
@@ -95,7 +96,7 @@ namespace TestProjectTester
 					await VehicleDELETEAsync(client, output);
 					break;
 				case 5:
-					MultiThreadedTest(client, output);
+					await MultiThreadedTestAsync(client, output);
 					break;
 				case 6:
 					output.WriteLine("Goodbye!");
@@ -555,7 +556,7 @@ namespace TestProjectTester
 		//far scegliere all'utente quanti thread lanciare e quanti tentativi per ciascuno.
 		//in output devo avere i risultati.
 		//dunque i risultati devono comparire sia in console che su file.log usando la classe stream.writer.
-		private static void MultiThreadedTest(TestAPIClient client, TextWriter output)
+		private static async Task MultiThreadedTestAsync(TestAPIClient client, TextWriter output)
 		{
 			Console.WriteLine("How many thread do you want to launch?");
 			GetUserInput(out string? threadInput);
@@ -575,34 +576,22 @@ namespace TestProjectTester
 			UpdateLogFile($"Starting current test: {numOfThreads} threads, {numOfAttempts} attempts");
 
 			//crea una lista che conterrà i thread
-			var threads = new List<Thread>();
-
-			for (int i = 0; i < numOfThreads; i++)
-			{
-				//salva l'indice per evitare che tutti i thread ricevano lo stesso i
-				int threadIndex = i;
-				var thread = new Thread(() => AsyncHelper.RunSync(() => DoSomeWorkAsync(client, threadIndex, numOfAttempts)))
-				{
-					Name = $"Test{i}",
-				};
-				threads.Add(thread);
-			}
+			var tasks = new List<Task>();
 
 			var startedAt = DateTime.Now;
 			var timer = new Stopwatch();
 			timer.Start();
-			foreach (var thread in threads)
+			for (int i = 0; i < numOfThreads; i++)
 			{
-				thread.Start();
+				tasks.Add(DoSomeWorkAsync(client, i, numOfAttempts));
 			}
-			foreach (var thread in threads)
-			{
-				//aspetta che tutti i thread abbiano finito di lavorare prima di proseguire
-				thread.Join();
-			}
+			//aspetta che tutti i thread abbiano finito di lavorare prima di proseguire
+			Task.WaitAll(tasks.ToArray());
 			timer.Stop();
 			UpdateLogFile($"All threads completed in DateTime: {DateTime.Now.Subtract(startedAt)}");
 			UpdateLogFile($"All threads completed in DateTime: {timer.Elapsed}");
+			var vehicles = await client.VehicleAllAsync();
+			UpdateLogFile($"Number of vehicles present: {vehicles.Count}");
 		}
 
 		private static async Task DoSomeWorkAsync(TestAPIClient client, int threadId, int attempts)
