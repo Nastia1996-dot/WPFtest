@@ -15,7 +15,7 @@ namespace TestProjectTester
 	{
 		private static StreamWriter? Log;
 		private static StreamWriter? CurrentLog;
-		private static readonly object lockObj = new();
+		private static readonly object LockObj = new();
 		static async Task Main(string[] args)
 		{
 			using (Log = new StreamWriter("test.log", true, Encoding.UTF8))
@@ -35,7 +35,7 @@ namespace TestProjectTester
 				try
 				{
 					//appena running diventa false esco dal ciclo e il programma termina
-					while (await MainMenuAsync(client, output, lockObj))
+					while (await MainMenuAsync(client, output))
 					{
 						BackToMenu(client, output);
 					}
@@ -61,7 +61,7 @@ namespace TestProjectTester
 
 		#region Metodi
 
-		private static async Task<bool> MainMenuAsync(TestAPIClient client, TextWriter output, object lockObj)
+		private static async Task<bool> MainMenuAsync(TestAPIClient client, TextWriter output)
 		{
 			//pulisce la console
 			Console.Clear();
@@ -94,7 +94,7 @@ namespace TestProjectTester
 					await VehicleDELETEAsync(client, output);
 					break;
 				case 5:
-					MultiThreadedTest(client, output, lockObj);
+					MultiThreadedTest(client, output);
 					break;
 				case 6:
 					output.WriteLine("Goodbye!");
@@ -310,7 +310,7 @@ namespace TestProjectTester
 						await GetAutomaticTestAsync(client, output);
 						break;
 					case 3:
-						await MainMenuAsync(client, output, lockObj);
+						await MainMenuAsync(client, output);
 						break;
 					default:
 						output.WriteLine("Invalid option: choose another one");
@@ -323,10 +323,10 @@ namespace TestProjectTester
 			}
 		}
 
-		private static void UpdateLogFile(string message, object lockObj)
+		private static void UpdateLogFile(string message)
 		{
 			Console.WriteLine(message);
-			lock (lockObj)
+			lock (LockObj)
 			{
 				Log?.WriteLine(message);
 				Log?.Flush();
@@ -554,7 +554,7 @@ namespace TestProjectTester
 		//far scegliere all'utente quanti thread lanciare e quanti tentativi per ciascuno.
 		//in output devo avere i risultati.
 		//dunque i risultati devono comparire sia in console che su file.log usando la classe stream.writer.
-		private static void MultiThreadedTest(TestAPIClient client, TextWriter output, object lockObj)
+		private static void MultiThreadedTest(TestAPIClient client, TextWriter output)
 		{
 			Console.WriteLine("How many thread do you want to launch?");
 			GetUserInput(out string? threadInput);
@@ -571,16 +571,16 @@ namespace TestProjectTester
 				return;
 			}
 
-			UpdateLogFile($"Starting current test: {numOfThreads} threads, {numOfAttempts} attempts", lockObj);
+			UpdateLogFile($"Starting current test: {numOfThreads} threads, {numOfAttempts} attempts");
 
 			//crea una lista che conterrà i thread
-			List<Thread> threads = new List<Thread>();
+			var threads = new List<Thread>();
 
 			for (int i = 0; i < numOfThreads; i++)
 			{
 				//salva l'indice per evitare che tutti i thread ricevano lo stesso i
 				int threadIndex = i;
-				Thread thread = new Thread(() => DoSomeWork(client, threadIndex, numOfAttempts, lockObj));
+				var thread = new Thread(() => DoSomeWork(client, threadIndex, numOfAttempts));
 				threads.Add(thread);
 			}
 			foreach (var thread in threads)
@@ -594,9 +594,9 @@ namespace TestProjectTester
 			}
 
 			string message = "All threads completed.";
-			UpdateLogFile(message, lockObj);
+			UpdateLogFile(message);
 		}
-		private static async void DoSomeWork(TestAPIClient client, int threadId, int attempts, object lockObj)
+		private static async void DoSomeWork(TestAPIClient client, int threadId, int attempts)
 		{
 			//ogni thread fa un ciclo pari al numero di tentativi
 			for (int i = 0; i < attempts; i++)
@@ -615,12 +615,12 @@ namespace TestProjectTester
 				{
 					var result = await client.VehiclePOSTAsync(vehicle);
 					string message = $"Thread {threadId} - Attempt {i + 1} - Vehicle ID created: {result.VehicleID}";
-					UpdateLogFile(message, lockObj);
+					UpdateLogFile(message);
 				}
 				catch (ApiException<ErrorResponse> ex)
 				{
 					string errorMsg = $"Thread {threadId} - Attempt {i + 1} - Error: {ex.Result.Message}";
-					UpdateLogFile(errorMsg, lockObj);
+					UpdateLogFile(errorMsg);
 				}
 			}
 		}
