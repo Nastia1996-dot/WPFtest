@@ -28,6 +28,8 @@ namespace TestProjectWebAPI.Controllers
 		{
 		}
 
+
+		private static object VehicleLocker = new();
 		private static List<CompanyVehicle> VehicleList =
 		[
 			new CompanyVehicle(){VehicleID= 996, VehicleType= VehicleTypes.Car, VehicleYearOfProduction= 2005, VehicleisActive=true, VehicleKm= 12500},
@@ -87,7 +89,10 @@ namespace TestProjectWebAPI.Controllers
 			//VehicleType = CompanyVehicleType[Random.Shared.Next(CompanyVehicleType.Length)],
 			//VehicleYearOfProduction = Random.Shared.Next(1990, 2025)
 			//}
-			return this.Ok(VehicleList.ToArray());
+			lock (VehicleLocker)
+			{
+				return this.Ok(VehicleList.ToArray());
+			}
 		}
 
 		/// <summary>
@@ -124,8 +129,8 @@ namespace TestProjectWebAPI.Controllers
 				{
 					errors.Add(new ValidationError
 					{
-						PropertyName= nameof(companyVehicle.VehicleisActive),
-						ErrorMessage=string.Format(CompanyVehicleLoc.VehicleIsActiveErrorMessageFormat)
+						PropertyName = nameof(companyVehicle.VehicleisActive),
+						ErrorMessage = string.Format(CompanyVehicleLoc.VehicleIsActiveErrorMessageFormat)
 					});
 				}
 				if (companyVehicle.VehicleType == VehicleTypes.Car || companyVehicle.VehicleType == VehicleTypes.Truck)
@@ -161,7 +166,10 @@ namespace TestProjectWebAPI.Controllers
 					//generazione ID fittizia
 					var newID = GenerateID();
 					companyVehicle.VehicleID = newID;
-					VehicleList.Add(companyVehicle);
+					lock (VehicleLocker)
+					{
+						VehicleList.Add(companyVehicle);
+					}
 					return this.Ok(companyVehicle);
 				}
 
@@ -211,14 +219,18 @@ namespace TestProjectWebAPI.Controllers
 		[ProducesResponseType(typeof(ErrorResponse), 404, "application/json")]
 		public IActionResult DeleteVehicle(int vehicleID)
 		{
-			if (this.TryFindVehicleByID(vehicleID, out var vehicle, out var notFoundResult))
+			lock (VehicleLocker)
 			{
-				VehicleList.Remove(vehicle);
-				return this.NoContent();
-			}
-			else
-			{
-				return notFoundResult;
+				if (this.TryFindVehicleByID(vehicleID, out var vehicle, out var notFoundResult))
+				{
+					VehicleList.Remove(vehicle);
+
+					return this.NoContent();
+				}
+				else
+				{
+					return notFoundResult;
+				}
 			}
 		}
 
@@ -249,7 +261,11 @@ namespace TestProjectWebAPI.Controllers
 
 		private bool TryFindVehicleByID(int vehicleID, [NotNullWhen(true)] out CompanyVehicle? vehicleFound, [NotNullWhen(false)] out IActionResult? notFoundResult)
 		{
-			vehicleFound = VehicleList.FirstOrDefault(v => v.VehicleID == vehicleID);
+			lock (VehicleLocker)
+			{
+				vehicleFound = VehicleList.FirstOrDefault(v => v.VehicleID == vehicleID);
+			}
+
 			if (vehicleFound != null)
 			{
 				notFoundResult = default;
