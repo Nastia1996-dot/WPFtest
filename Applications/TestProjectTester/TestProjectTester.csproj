@@ -6,6 +6,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+  <PropertyGroup>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+  </PropertyGroup>
 
   <ItemGroup>
     <OpenApiReference Include="TestProjectAPI\OpenApiDefinition\TestProjectApi.json" Namespace="TestProjectTester.TestProjectAPI" ClassName="TestAPIClient" />

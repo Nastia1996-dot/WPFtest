@@ -13,7 +13,7 @@ namespace TestProjectWebAPI.Controllers
 	/// <response code="500">An internal server error has occurred</response>
 	[ApiController]
 	[Route("vehicle")]
-	[ProducesResponseType(typeof(ErrorResponse), 500, "application/json")]
+	[ProducesResponseType<ErrorResponse>(500, "application/json")]
 
 	public class CompanyVehicleController : ControllerBase
 	{
@@ -30,10 +30,10 @@ namespace TestProjectWebAPI.Controllers
 
 		private static List<CompanyVehicle> VehicleList =
 		[
-			new CompanyVehicle(){VehicleID= 1000, VehicleType= VehicleTypes.Car, VehicleYearOfProduction= 2005, VehicleisActive=true, VehicleKm= 12500},
-			new CompanyVehicle(){VehicleID= 1001, VehicleType= VehicleTypes.Truck, VehicleYearOfProduction= 1999, VehicleisActive= true, VehicleKm= 100000},
-			new CompanyVehicle(){VehicleID= 1002, VehicleType= VehicleTypes.Cruise, VehicleYearOfProduction= 2010, VehicleisActive= false, VehicleWorkingHours=2500},
-			new CompanyVehicle(){VehicleID= 1003, VehicleType= VehicleTypes.Tractor, VehicleYearOfProduction= 1995, VehicleisActive= true, VehicleWorkingHours= 3450},
+			new CompanyVehicle(){VehicleID= 996, VehicleType= VehicleTypes.Car, VehicleYearOfProduction= 2005, VehicleisActive=true, VehicleKm= 12500},
+			new CompanyVehicle(){VehicleID= 997, VehicleType= VehicleTypes.Truck, VehicleYearOfProduction= 1999, VehicleisActive= true, VehicleKm= 100000},
+			new CompanyVehicle(){VehicleID= 998, VehicleType= VehicleTypes.Cruise, VehicleYearOfProduction= 2010, VehicleisActive= false, VehicleWorkingHours=2500},
+			new CompanyVehicle(){VehicleID= 999, VehicleType= VehicleTypes.Tractor, VehicleYearOfProduction= 1995, VehicleisActive= true, VehicleWorkingHours= 3450},
 		];
 
 
@@ -47,7 +47,7 @@ namespace TestProjectWebAPI.Controllers
 		/// <response code="404">Not found</response>
 		[HttpGet("{vehicleID:int}")]
 		[ProducesResponseType<CompanyVehicle>(200, "application/json")]
-		[ProducesResponseType(typeof(ErrorResponse), 404, "application/json")]
+		[ProducesResponseType<ErrorResponse>(404, "application/json")]
 		public IActionResult GetVehicleByID(int vehicleID)
 		{
 			try
@@ -224,12 +224,27 @@ namespace TestProjectWebAPI.Controllers
 
 		#region PrivateMethods
 
+		private static LockingTypes LockingType = LockingTypes.Interlocked;
+		private static object newIDLocker = new object();
 		private static int newID = VehicleList.Max(v => v.VehicleID);
 		private static int GenerateID()
 		{
-			//Nessun altro thread può interferire mentre il valore viene letto, incrementato e riscritto.
-			//L’intera operazione è eseguita in una singola istruzione a basso livello, in modo sicuro e veloce.
-			return Interlocked.Increment(ref newID);
+			switch (LockingType)
+			{
+				case LockingTypes.NoLock:
+					return ++newID;
+				case LockingTypes.Interlocked:
+					//Nessun altro thread può interferire mentre il valore viene letto, incrementato e riscritto.
+					//L’intera operazione è eseguita in una singola istruzione a basso livello, in modo sicuro e veloce.
+					return Interlocked.Increment(ref newID);
+				case LockingTypes.Lock:
+					lock (newIDLocker)
+					{
+						return ++newID;
+					}
+				default:
+					throw new NotSupportedException(LockingType.ToString());
+			}
 		}
 
 		private bool TryFindVehicleByID(int vehicleID, [NotNullWhen(true)] out CompanyVehicle? vehicleFound, [NotNullWhen(false)] out IActionResult? notFoundResult)
