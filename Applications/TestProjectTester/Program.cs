@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Converters;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.IO;
@@ -75,9 +76,10 @@ namespace TestProjectTester
 			output.WriteLine("3. Create or update vehicle");
 			output.WriteLine("4. Delete vehicle");
 			output.WriteLine("5. Multithreaded test");
-			output.WriteLine("6. Exit");
+			output.WriteLine("6. Measure locking performance test");
+			output.WriteLine("7. Exit");
 			AddSpace();
-			SelectAnOptionBetween(output, 1, 6, out var choice);
+			SelectAnOptionBetween(output, 1, 7, out var choice);
 
 			AddSpace();
 
@@ -99,6 +101,9 @@ namespace TestProjectTester
 					await MultiThreadedTestAsync(client, output);
 					break;
 				case 6:
+					await MeasureLockingPerformanceAsync(client);
+					break;
+				case 7:
 					output.WriteLine("Goodbye!");
 					return false;
 				default:
@@ -366,7 +371,7 @@ namespace TestProjectTester
 			AddSpace();
 			output.WriteLine("------AUTOMATIC TEST------");
 
-			output.WriteLine("Results of Input: 1000, 1001, 1002, 1003");
+			output.WriteLine("Results of Input: 996, 997, 998, 999");
 			AddSpace();
 
 			await ShowAllVehiclesAsync(output, client);
@@ -558,20 +563,7 @@ namespace TestProjectTester
 		//dunque i risultati devono comparire sia in console che su file.log usando la classe stream.writer.
 		private static async Task MultiThreadedTestAsync(TestAPIClient client, TextWriter output)
 		{
-			Console.WriteLine("How many thread do you want to launch?");
-			GetUserInput(out string? threadInput);
-			if (!int.TryParse(threadInput, out int numOfThreads) || numOfThreads <= 0)
-			{
-				Console.WriteLine("Invalid input format. Please enter a numeric value greater than 0.");
-				return;
-			}
-			Console.WriteLine("How many attempts per thread do you want to set?");
-			GetUserInput(out string? attemptsInput);
-			if (!int.TryParse(attemptsInput, out int numOfAttempts) || numOfAttempts <= 0)
-			{
-				Console.WriteLine("Invalid input format. Please enter a numeric value greater than 0.");
-				return;
-			}
+			AskHowManyThreadsAndAttempts(out int numOfThreads, out int numOfAttempts);
 
 			UpdateLogFile($"Starting current test: {numOfThreads} threads, {numOfAttempts} attempts");
 
@@ -583,7 +575,7 @@ namespace TestProjectTester
 			timer.Start();
 			for (int i = 0; i < numOfThreads; i++)
 			{
-				tasks.Add(DoSomeWorkAsync(client, i, numOfAttempts));
+				tasks.Add(DoSomeWorkAsync(client, i, numOfAttempts, true));
 			}
 			//aspetta che tutti i thread abbiano finito di lavorare prima di proseguire
 			Task.WaitAll(tasks.ToArray());
@@ -594,7 +586,7 @@ namespace TestProjectTester
 			UpdateLogFile($"Number of vehicles present: {vehicles.Count}");
 		}
 
-		private static async Task DoSomeWorkAsync(TestAPIClient client, int threadId, int attempts)
+		private static async Task DoSomeWorkAsync(TestAPIClient client, int threadId, int attempts, bool logOnConsole)
 		{
 			//ogni thread fa un ciclo pari al numero di tentativi
 			for (int i = 0; i < attempts; i++)
@@ -612,14 +604,64 @@ namespace TestProjectTester
 				try
 				{
 					var result = await client.VehiclePOSTAsync(vehicle);
-					string message = $"Thread {threadId} - Attempt {i + 1} - Vehicle ID created: {result.VehicleID}";
-					UpdateLogFile(message);
+					if (logOnConsole)
+					{
+						UpdateLogFile($"Thread {threadId} - Attempt {i + 1} - Vehicle ID created: {result.VehicleID}");
+					}
 				}
 				catch (ApiException<ErrorResponse> ex)
 				{
 					string errorMsg = $"Thread {threadId} - Attempt {i + 1} - Error: {ex.Result.Message}";
 					UpdateLogFile(errorMsg);
 				}
+			}
+		}
+
+		private static void AskHowManyThreadsAndAttempts(out int numOfThreads, out int numOfAttempts)
+		{
+			Console.WriteLine("How many thread do you want to launch?");
+			GetUserInput(out string? threadInput);
+			if (!int.TryParse(threadInput, out numOfThreads) || numOfThreads <= 0)
+			{
+				Console.WriteLine("Invalid input format. Please enter a numeric value greater than 0.");
+				numOfThreads = 1;
+				numOfAttempts = 1;
+				return;
+			}
+			Console.WriteLine("How many attempts per thread do you want to set?");
+			GetUserInput(out string? attemptsInput);
+			if (!int.TryParse(attemptsInput, out numOfAttempts) || numOfAttempts <= 0)
+			{
+				Console.WriteLine("Invalid input format. Please enter a numeric value greater than 0.");
+				numOfThreads = 1;
+				numOfAttempts = 1;
+				return;
+			}
+		}
+		private static async Task MeasureLockingPerformanceAsync(TestAPIClient client)
+		{
+
+			AskHowManyThreadsAndAttempts(out int numOfThreads, out int numOfAttempts);
+
+			foreach (var locktype in Enum.GetValues<LockingTypes>())
+			{
+				UpdateLogFile($"Starting test with locking type: {locktype}.");
+				await client.ResetAsync(locktype);
+
+				var stopwatch = Stopwatch.StartNew();
+
+				var tasks = new List<Task>();
+
+				for (int i = 0; i < numOfThreads; i++)
+				{
+					tasks.Add(DoSomeWorkAsync(client, i, numOfAttempts, false));
+				}
+				await Task.WhenAll(tasks);
+				stopwatch.Stop();
+
+
+				UpdateLogFile($"Elapsed time: {stopwatch.Elapsed}");
+				AddSpace();
 			}
 		}
 

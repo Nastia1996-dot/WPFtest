@@ -205,6 +205,40 @@
         }
       }
     },
+    "/vehicle/reset/{lockingType}": {
+      "post": {
+        "tags": [
+          "CompanyVehicle"
+        ],
+        "summary": "ResetVehiclesAndSetLocking",
+        "description": "Reset vehicles and set Locking type: no lock, lock or interlocked",
+        "parameters": [
+          {
+            "name": "lockingType",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/LockingTypes"
+            }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "An internal server error has occurred",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "Reset successful"
+          }
+        }
+      }
+    },
     "/weather/forecast": {
       "get": {
         "tags": [
@@ -422,6 +456,15 @@
         },
         "additionalProperties": false,
         "description": "Represents a standard error response returned by the API."
+      },
+      "LockingTypes": {
+        "enum": [
+          "NoLock",
+          "Interlocked",
+          "Lock"
+        ],
+        "type": "string",
+        "description": "Tipi di lock"
       },
       "ValidationError": {
         "type": "object",
