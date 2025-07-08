@@ -339,17 +339,7 @@ namespace TestProjectTester
 				Console.WriteLine(message);
 			}
 
-			if (!logToSeparateFiles)
-			{
-				lock (LockObj)
-				{
-					Log?.WriteLine(message);
-					Log?.Flush();
-					CurrentLog?.WriteLine(message);
-					CurrentLog?.Flush();
-				}
-			}
-			else
+			if (logToSeparateFiles)
 			{
 				if (threadId == null)
 				{
@@ -358,10 +348,20 @@ namespace TestProjectTester
 				//costruisco il percorso per inserire i file di log nella cartella
 				string fileName = Path.Combine(CurrentTestLogDirectory!, $"thread_{threadId:D4}.log");
 
+
+				using var writer = new StreamWriter(fileName, true, Encoding.UTF8);
+				writer.WriteLine(message);
+				//File.AppendAllLines(fileName, [message], Encoding.UTF8);
+
+			}
+			else
+			{
 				lock (LockObj)
 				{
-					using var writer = new StreamWriter(fileName, true, Encoding.UTF8);
-					writer.WriteLine(message);
+					Log?.WriteLine(message);
+					Log?.Flush();
+					CurrentLog?.WriteLine(message);
+					CurrentLog?.Flush();
 				}
 			}
 		}
@@ -590,7 +590,7 @@ namespace TestProjectTester
 				ManageErrorResponse(notFound, client, output);
 			}
 		}
-		private static async Task RunMultithreadedTestAsync(TestAPIClient client, int numOfThreads, int numOfAttempts, bool logToGlobalFiles, bool logToSeparateFiles, string headerMessage )
+		private static async Task RunMultithreadedTestAsync(TestAPIClient client, int numOfThreads, int numOfAttempts, bool logToGlobalFiles, bool logToSeparateFiles, string headerMessage)
 		{
 			UpdateLogFile(headerMessage, logToSeparateFiles: false);
 			var timer = Stopwatch.StartNew();
@@ -618,21 +618,21 @@ namespace TestProjectTester
 			AskHowManyThreadsAndAttempts(out int numOfThreads, out int numOfAttempts);
 
 			await RunMultithreadedTestAsync(
-				client, 
+				client,
 				numOfThreads,
-				numOfAttempts, 
-				logToGlobalFiles: true, 
-				logToSeparateFiles: false, 
+				numOfAttempts,
+				logToGlobalFiles: true,
+				logToSeparateFiles: false,
 				headerMessage: $"Starting current test: {numOfThreads} threads, {numOfAttempts} attempts");
 
 			var vehicles = await client.VehicleAllAsync();
 			UpdateLogFile($"Number of vehicles present: {vehicles.Count}", logToSeparateFiles: false);
 		}
 
-		private static async Task DoSomeWorkAsync(TestAPIClient client, int threadId, int attempts, bool logToGlobalFiles, bool logToSeparateFiles)
+		private static async Task DoSomeWorkAsync(TestAPIClient client, int threadId, int numOfAttempts, bool logToGlobalFiles, bool logToSeparateFiles)
 		{
 			//ogni thread fa un ciclo pari al numero di tentativi
-			for (int i = 0; i < attempts; i++)
+			for (int i = 0; i < numOfAttempts; i++)
 			{
 				var vehicle = new CompanyVehicle
 				{
@@ -647,7 +647,7 @@ namespace TestProjectTester
 				try
 				{
 					var result = await client.VehiclePOSTAsync(vehicle);
-					string message = $"Thread {threadId} - Attempt {i + 1} - Vehicle ID created: {result.VehicleID}";
+					string message = $"Thread {threadId} - Attempt {i} - Vehicle ID created: {result.VehicleID}";
 
 					if (logToGlobalFiles)
 						UpdateLogFile(message, logToSeparateFiles: false, logToConsole: true); // log globale + console
@@ -657,7 +657,7 @@ namespace TestProjectTester
 				}
 				catch (ApiException<ErrorResponse> ex)
 				{
-					string errorMsg = $"Thread {threadId} - Attempt {i + 1} - Error: {ex.Result.Message}";
+					string errorMsg = $"Thread {threadId} - Attempt {i} - Error: {ex.Result.Message}";
 
 					if (logToGlobalFiles)
 						UpdateLogFile(errorMsg, logToSeparateFiles: false);
