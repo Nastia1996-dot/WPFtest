@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.ConstrainedExecution;
+using System.Security.AccessControl;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,6 +20,8 @@ namespace TestProjectTester
 		private static StreamWriter? Log;
 		private static StreamWriter? CurrentLog;
 		private static readonly object LockObj = new();
+		private static string ThreadsLogDirectory = "LogsByThread";
+		private static string? CurrentTestLogDirectory;
 		static async Task Main(string[] args)
 		{
 			using (Log = new StreamWriter("test.log", true, Encoding.UTF8))
@@ -329,18 +332,48 @@ namespace TestProjectTester
 				ManageErrorResponse(notFound, client, output);
 			}
 		}
-
-		private static void UpdateLogFile(string message)
+		private static void UpdateLogFile(string message, bool logToSeparateFiles, int? threadId = null, bool logToConsole = true)
 		{
-			Console.WriteLine(message);
-			lock (LockObj)
+			if (logToConsole)
 			{
-				Log?.WriteLine(message);
-				Log?.Flush();
-				CurrentLog?.WriteLine(message);
-				CurrentLog?.Flush();
+				Console.WriteLine(message);
+			}
+
+			if (!logToSeparateFiles)
+			{
+				lock (LockObj)
+				{
+					Log?.WriteLine(message);
+					Log?.Flush();
+					CurrentLog?.WriteLine(message);
+					CurrentLog?.Flush();
+				}
+			}
+			else
+			{
+				if (threadId == null)
+				{
+					throw new ArgumentNullException(nameof(threadId), "threadId cannot be null when logging to separate files.");
+				}
+				//costruisco il percorso per inserire i file di log nella cartella
+				string fileName = Path.Combine(CurrentTestLogDirectory!, $"thread_{threadId:D4}.log");
+
+				lock (LockObj)
+				{
+					using var writer = new StreamWriter(fileName, true, Encoding.UTF8);
+					writer.WriteLine(message);
+				}
 			}
 		}
+
+		private static void CreateNewLogDirectoryForTest()
+		{
+			var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+			CurrentTestLogDirectory = Path.Combine(ThreadsLogDirectory, $"Test_{timestamp}");
+
+			Directory.CreateDirectory(CurrentTestLogDirectory);
+		}
+
 		private static void GetManualTest(TestAPIClient client, TextWriter output)
 		{
 			AddSpace();
@@ -557,6 +590,25 @@ namespace TestProjectTester
 				ManageErrorResponse(notFound, client, output);
 			}
 		}
+		private static async Task RunMultithreadedTestAsync(TestAPIClient client, int numOfThreads, int numOfAttempts, bool logToGlobalFiles, bool logToSeparateFiles, string headerMessage )
+		{
+			UpdateLogFile(headerMessage, logToSeparateFiles: false);
+			var timer = Stopwatch.StartNew();
+
+			//crea una lista che conterrà i thread
+			var tasks = new List<Task>();
+
+			for (int i = 0; i < numOfThreads; i++)
+			{
+				tasks.Add(DoSomeWorkAsync(client, i, numOfAttempts, logToGlobalFiles, logToSeparateFiles));
+			}
+			//aspetta che tutti i thread abbiano finito di lavorare prima di proseguire
+			await Task.WhenAll(tasks);
+			timer.Stop();
+
+			UpdateLogFile($"Elapsed time: {timer.Elapsed}", logToSeparateFiles: false);
+			AddSpace();
+		}
 
 		//far scegliere all'utente quanti thread lanciare e quanti tentativi per ciascuno.
 		//in output devo avere i risultati.
@@ -565,28 +617,19 @@ namespace TestProjectTester
 		{
 			AskHowManyThreadsAndAttempts(out int numOfThreads, out int numOfAttempts);
 
-			UpdateLogFile($"Starting current test: {numOfThreads} threads, {numOfAttempts} attempts");
+			await RunMultithreadedTestAsync(
+				client, 
+				numOfThreads,
+				numOfAttempts, 
+				logToGlobalFiles: true, 
+				logToSeparateFiles: false, 
+				headerMessage: $"Starting current test: {numOfThreads} threads, {numOfAttempts} attempts");
 
-			//crea una lista che conterrà i thread
-			var tasks = new List<Task>();
-
-			var startedAt = DateTime.Now;
-			var timer = new Stopwatch();
-			timer.Start();
-			for (int i = 0; i < numOfThreads; i++)
-			{
-				tasks.Add(DoSomeWorkAsync(client, i, numOfAttempts, true));
-			}
-			//aspetta che tutti i thread abbiano finito di lavorare prima di proseguire
-			Task.WaitAll(tasks.ToArray());
-			timer.Stop();
-			UpdateLogFile($"All threads completed in DateTime: {DateTime.Now.Subtract(startedAt)}");
-			UpdateLogFile($"All threads completed in DateTime: {timer.Elapsed}");
 			var vehicles = await client.VehicleAllAsync();
-			UpdateLogFile($"Number of vehicles present: {vehicles.Count}");
+			UpdateLogFile($"Number of vehicles present: {vehicles.Count}", logToSeparateFiles: false);
 		}
 
-		private static async Task DoSomeWorkAsync(TestAPIClient client, int threadId, int attempts, bool logOnConsole)
+		private static async Task DoSomeWorkAsync(TestAPIClient client, int threadId, int attempts, bool logToGlobalFiles, bool logToSeparateFiles)
 		{
 			//ogni thread fa un ciclo pari al numero di tentativi
 			for (int i = 0; i < attempts; i++)
@@ -604,15 +647,23 @@ namespace TestProjectTester
 				try
 				{
 					var result = await client.VehiclePOSTAsync(vehicle);
-					if (logOnConsole)
-					{
-						UpdateLogFile($"Thread {threadId} - Attempt {i + 1} - Vehicle ID created: {result.VehicleID}");
-					}
+					string message = $"Thread {threadId} - Attempt {i + 1} - Vehicle ID created: {result.VehicleID}";
+
+					if (logToGlobalFiles)
+						UpdateLogFile(message, logToSeparateFiles: false, logToConsole: true); // log globale + console
+
+					if (logToSeparateFiles)
+						UpdateLogFile(message, logToSeparateFiles: true, threadId, logToConsole: false); // file per thread
 				}
 				catch (ApiException<ErrorResponse> ex)
 				{
 					string errorMsg = $"Thread {threadId} - Attempt {i + 1} - Error: {ex.Result.Message}";
-					UpdateLogFile(errorMsg);
+
+					if (logToGlobalFiles)
+						UpdateLogFile(errorMsg, logToSeparateFiles: false);
+
+					if (logToSeparateFiles)
+						UpdateLogFile(errorMsg, logToSeparateFiles: true, threadId);
 				}
 			}
 		}
@@ -640,34 +691,21 @@ namespace TestProjectTester
 		}
 		private static async Task MeasureLockingPerformanceAsync(TestAPIClient client)
 		{
-
+			CreateNewLogDirectoryForTest();
 			AskHowManyThreadsAndAttempts(out int numOfThreads, out int numOfAttempts);
 
 			foreach (var locktype in Enum.GetValues<LockingTypes>())
 			{
-				UpdateLogFile($"Starting test with locking type: {locktype}.");
 				await client.ResetAsync(locktype);
-
-				var stopwatch = Stopwatch.StartNew();
-
-				var tasks = new List<Task>();
-
-				for (int i = 0; i < numOfThreads; i++)
-				{
-					tasks.Add(DoSomeWorkAsync(client, i, numOfAttempts, false));
-				}
-				await Task.WhenAll(tasks);
-				stopwatch.Stop();
-
-
-				UpdateLogFile($"Elapsed time: {stopwatch.Elapsed}");
-				AddSpace();
+				await RunMultithreadedTestAsync(
+					client,
+					numOfThreads,
+					numOfAttempts,
+					logToGlobalFiles: false,
+					logToSeparateFiles: true,
+					headerMessage: $"Starting test with locking type: {locktype}.");
 			}
 		}
-
-
-
 	}
-
 }
 #endregion

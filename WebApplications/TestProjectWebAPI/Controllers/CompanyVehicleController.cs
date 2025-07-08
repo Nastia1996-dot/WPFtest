@@ -167,12 +167,18 @@ namespace TestProjectWebAPI.Controllers
 				//se non viene inserito l'id allora si procede con l'INSERIMENTO di un nuovo veicolo
 				if (companyVehicle.VehicleID == 0)
 				{
-					//generazione ID fittizia
-					var newID = GenerateID();
-					companyVehicle.VehicleID = newID;
-					//TODO: se non riesce la TryAdd deve assegnare nuovo id e riprovare (all'infinito)
-					VehicleDictionary.TryAdd(newID, companyVehicle);
-					return this.Ok(companyVehicle);
+					//Se non riesce la TryAdd deve assegnare nuovo id e riprovare (all'infinito)
+					while (true)
+					{
+						//generazione ID fittizia
+						var newID = GenerateID();
+						companyVehicle.VehicleID = newID;
+
+						if (VehicleDictionary.TryAdd(newID, companyVehicle))
+						{
+							return this.Ok(companyVehicle);
+						}
+					}
 				}
 
 				// Se il veicolo esiste, viene aggiornato
