@@ -6,6 +6,8 @@ using System.Diagnostics.Contracts;
 using TestProjectLibrary.Localization.Models;
 using TestProjectLibrary.Models;
 using TestProjectLibrary.Models.Enums;
+using TestProjectLibrary.ServiceImplementations;
+using TestProjectLibrary.Services;
 
 namespace TestProjectWebAPI.Controllers
 {
@@ -16,30 +18,14 @@ namespace TestProjectWebAPI.Controllers
 	[Route("vehicle")]
 	[ProducesResponseType<ErrorResponse>(500, "application/json")]
 
-	public class CompanyVehicleController : ControllerBase
+	public class CompanyVehicleController(ICompanyVehicleStoreService storeService) : ControllerBase
 	{
 
-		/// <summary>
-		/// CompanyVehicleController
-		/// </summary>
-		/// <remarks>
-		/// Controller
-		/// </remarks>
-		public CompanyVehicleController()
-		{
-		}
+		#region Properties
 
+		private ICompanyVehicleStoreService StoreService { get; } = storeService;
 
-		//private static object VehicleLocker = new();
-
-		private static ConcurrentDictionary<int, CompanyVehicle> VehicleDictionary = new ConcurrentDictionary<int, CompanyVehicle>(new Dictionary<int, CompanyVehicle>()
-		{
-			{ 996, new CompanyVehicle() { VehicleID = 996, VehicleType = VehicleTypes.Car, VehicleYearOfProduction = 2005, VehicleisActive = true, VehicleKm = 12500 } },
-			{ 997, new CompanyVehicle() { VehicleID = 997, VehicleType = VehicleTypes.Truck, VehicleYearOfProduction = 1999, VehicleisActive = true, VehicleKm = 100000 } },
-			{ 998, new CompanyVehicle() { VehicleID = 998, VehicleType = VehicleTypes.Cruise, VehicleYearOfProduction = 2010, VehicleisActive = false, VehicleWorkingHours = 2500 } },
-			{ 999, new CompanyVehicle() { VehicleID = 999, VehicleType = VehicleTypes.Tractor, VehicleYearOfProduction = 1995, VehicleisActive = true, VehicleWorkingHours = 3450 } },
-		});
-
+		#endregion
 
 		/// <summary>
 		/// GetVehicleByID
@@ -56,14 +42,13 @@ namespace TestProjectWebAPI.Controllers
 		{
 			try
 			{
-				if (VehicleDictionary.TryGetValue(vehicleID, out var vehicle))
+				if (this.StoreService.TryRead(vehicleID, out var vehicle))
 				{
 					return this.Ok(vehicle);
 				}
 				else
 				{
-
-					return this.NotFound(new ErrorResponse().SetNotFound(string.Format(CompanyVehicleLoc.NotFoundMessageFormat)));
+					return this.NotFound(new ErrorResponse().SetNotFound(string.Format(CompanyVehicleLoc.NotFoundMessageFormat, vehicleID)));
 				}
 			}
 			catch (Exception ex)
@@ -85,18 +70,7 @@ namespace TestProjectWebAPI.Controllers
 		[ProducesResponseType<CompanyVehicle[]>(200, "application/json")]
 		public IActionResult GetCompanyVehiclesList()
 		{
-			//return this.Ok(Enumerable.Range(1, 4).Select(index => new CompanyVehicle
-			//{
-			//VehicleID = Random.Shared.Next(1000, 9999),
-			//VehicleType = CompanyVehicleType[Random.Shared.Next(CompanyVehicleType.Length)],
-			//VehicleYearOfProduction = Random.Shared.Next(1990, 2025)
-			//}
-			//lock (VehicleLocker)
-			{
-				return this.Ok(from item in VehicleDictionary.Values
-							   orderby item.VehicleID
-							   select item);
-			}
+			return this.Ok(this.StoreService.GetList());		
 		}
 
 		/// <summary>
@@ -118,9 +92,16 @@ namespace TestProjectWebAPI.Controllers
 		{
 			try
 			{
-				var errors = new List<ValidationError>();
-				//validazioni comuni
+				//se l'ID è maggiore di 0 ma non esiste
+				if (companyVehicle.VehicleID > 0 && !this.StoreService.TryRead(companyVehicle.VehicleID, out _))
+				{
+					return this.NotFound(new ErrorResponse().SetNotFound(string.Format(CompanyVehicleLoc.NotFoundMessageFormat, companyVehicle.VehicleID)));
+				}
 
+				//validazioni comuni
+				var errors = new List<ValidationError>();
+
+				//se non viene inserito l'id allora si procede con l'INSERIMENTO di un nuovo veicolo
 				if (companyVehicle.VehicleYearOfProduction < 1900 || companyVehicle.VehicleYearOfProduction > DateTime.Now.Year)
 				{
 					errors.Add(new ValidationError
@@ -164,43 +145,13 @@ namespace TestProjectWebAPI.Controllers
 				{
 					return this.BadRequest(new ErrorResponse().SetValidationErrors(errors));
 				}
-				//se non viene inserito l'id allora si procede con l'INSERIMENTO di un nuovo veicolo
-				if (companyVehicle.VehicleID == 0)
+				//se la chiamata al servizio non va a buon fine restituisco l'errore
+				if(!this.StoreService.TryCreateOrUpdate(companyVehicle, out var error))
 				{
-					//Se non riesce la TryAdd deve assegnare nuovo id e riprovare (all'infinito)
-					while (true)
-					{
-						//generazione ID fittizia
-						var newID = GenerateID();
-						companyVehicle.VehicleID = newID;
-
-						if (VehicleDictionary.TryAdd(newID, companyVehicle))
-						{
-							return this.Ok(companyVehicle);
-						}
-					}
+					return this.BadRequest(error);
 				}
 
-				// Se il veicolo esiste, viene aggiornato
-				if (!VehicleDictionary.TryGetValue(companyVehicle.VehicleID, out var existingVehicle))
-				{
-					return this.NotFound(new ErrorResponse().SetNotFound(string.Format(CompanyVehicleLoc.NotFoundMessageFormat, companyVehicle.VehicleID)));
-
-				}
-				existingVehicle.VehicleType = companyVehicle.VehicleType;
-				existingVehicle.VehicleYearOfProduction = companyVehicle.VehicleYearOfProduction;
-				existingVehicle.VehicleisActive = companyVehicle.VehicleisActive;
-				if (companyVehicle.VehicleType == VehicleTypes.Car || companyVehicle.VehicleType == VehicleTypes.Truck)
-				{
-					existingVehicle.VehicleKm = companyVehicle.VehicleKm;
-
-
-				}
-				if (companyVehicle.VehicleType == VehicleTypes.Cruise || companyVehicle.VehicleType == VehicleTypes.Tractor)
-				{
-					existingVehicle.VehicleWorkingHours = companyVehicle.VehicleWorkingHours;
-				}
-				return this.Ok(existingVehicle);
+				return this.Ok(companyVehicle);
 			}
 			catch (Exception ex)
 			{
@@ -226,11 +177,10 @@ namespace TestProjectWebAPI.Controllers
 		[ProducesResponseType(typeof(ErrorResponse), 404, "application/json")]
 		public IActionResult DeleteVehicle(int vehicleID)
 		{
-			//lock (VehicleLocker)
 			{
-				if (!VehicleDictionary.TryRemove(vehicleID, out var removedVehicle))
+				if (!this.StoreService.TryDelete(vehicleID))
 				{
-					return this.NotFound(new ErrorResponse().SetNotFound(string.Format(CompanyVehicleLoc.NotFoundMessageFormat)));
+					return this.NotFound(new ErrorResponse().SetNotFound(string.Format(CompanyVehicleLoc.NotFoundMessageFormat, vehicleID)));
 				}
 				return this.NoContent();
 			}
@@ -247,43 +197,10 @@ namespace TestProjectWebAPI.Controllers
 		[ProducesResponseType(204)]
 		public IActionResult ResetVehiclesAndSetLocking(LockingTypes lockingType)
 		{
-			// Pulisce la lista
-			VehicleDictionary.Clear();
-
-			// Imposta il tipo di lock scelto
-			LockingType = lockingType;
-
-			// Resetta anche il contatore ID, se serve
-			newID = 0;
+			this.StoreService.ResetAndSetLocking(lockingType);
 
 			return this.NoContent();
 		}
-
-		#region PrivateMethods
-
-		private static LockingTypes LockingType = LockingTypes.Interlocked;
-		private static object newIDLocker = new object();
-		private static int newID = VehicleDictionary.Keys.Max();
-		private static int GenerateID()
-		{
-			switch (LockingType)
-			{
-				case LockingTypes.NoLock:
-					return ++newID;
-				case LockingTypes.Interlocked:
-					//Nessun altro thread può interferire mentre il valore viene letto, incrementato e riscritto.
-					//L’intera operazione è eseguita in una singola istruzione a basso livello, in modo sicuro e veloce.
-					return Interlocked.Increment(ref newID);
-				case LockingTypes.Lock:
-					lock (newIDLocker)
-					{
-						return ++newID;
-					}
-				default:
-					throw new NotSupportedException(LockingType.ToString());
-			}
-		}
-		#endregion
 
 	}
 

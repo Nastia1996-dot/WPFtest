@@ -2,6 +2,8 @@
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Text.Json.Serialization;
 using TestProjectLibrary.Models;
+using TestProjectLibrary.ServiceImplementations;
+using TestProjectLibrary.Services;
 
 namespace TestProjectWebAPI
 {
@@ -10,6 +12,9 @@ namespace TestProjectWebAPI
 	/// </summary>
 	public class Program
 	{
+
+		private static bool UseInMemoryStore = true;
+
 		/// <summary>
 		/// Main method of the application
 		/// </summary>
@@ -32,6 +37,14 @@ namespace TestProjectWebAPI
 				options.IncludeXmlComments(Path.ChangeExtension(typeof(CompanyVehicle).Assembly.Location, ".xml"));
 				options.IncludeXmlComments(Path.ChangeExtension(typeof(Program).Assembly.Location, ".xml"));
 			});
+			if (UseInMemoryStore)
+			{
+				builder.Services.AddSingleton<ICompanyVehicleStoreService, CompanyVehicleStoreServiceInMemory>();
+			}
+			else
+			{
+				builder.Services.AddScoped<ICompanyVehicleStoreService, CompanyVehicleStoreServiceOnDb>();
+			}
 
 			var app = builder.Build();
 
