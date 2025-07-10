@@ -52,10 +52,14 @@ namespace TestProjectLibrary.Models
 		/// </summary>
 		public int? VehicleWorkingHours { get; set; }
 
+
+		#region Methods
 		/// <summary>
 		/// Collects all the validation errors that may arise
 		/// </summary>
-		public List<ValidationError> GetValidationErrors()
+		/// <param name="validationErrors"><c>out</c>: list of validation errors if the validation is failed</param>
+		/// <returns><c>true</c> if the validation is successful, <c>false</c> otherwise</returns>
+		public bool TryValidateModel(out ValidationError[] validationErrors)
 		{
 			//validazioni comuni
 			var errors = new List<ValidationError>();
@@ -99,7 +103,9 @@ namespace TestProjectLibrary.Models
 					});
 				}
 			}
-			return errors;
+			validationErrors = errors.ToArray();
+			return validationErrors.Length == 0;
 		}
+		#endregion
 	}
 }

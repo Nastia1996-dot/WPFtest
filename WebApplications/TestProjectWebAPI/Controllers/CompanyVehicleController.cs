@@ -93,24 +93,18 @@ namespace TestProjectWebAPI.Controllers
 		{
 			try
 			{
-				var validationErros = companyVehicle.GetValidationErrors();
-				if (validationErros.Count > 0)
-				{
-					return this.BadRequest(new ErrorResponse().SetValidationErrors(validationErros));
-				}
-
 				//chiamata al servizio
 				if (this.StoreService.TryCreateOrUpdate(companyVehicle, out var errors))
 				{
 					return this.Ok(companyVehicle);
 				}
+				else if (errors?.Status == 404)
+				{
+					return this.NotFound(errors);
+				}
 				else
 				{
 					// Se c'è un errore NotFound, lo restituisco con 404
-					if (errors != null && errors.Status == 404)
-					{
-						return this.NotFound(errors);
-					}
 					return this.BadRequest(errors);
 				}
 			}
@@ -138,12 +132,13 @@ namespace TestProjectWebAPI.Controllers
 		[ProducesResponseType(typeof(ErrorResponse), 404, "application/json")]
 		public IActionResult DeleteVehicle(int vehicleID)
 		{
+			if (this.StoreService.TryDelete(vehicleID))
 			{
-				if (!this.StoreService.TryDelete(vehicleID))
-				{
-					return this.NotFound(new ErrorResponse().SetNotFound(string.Format(CompanyVehicleLoc.NotFoundMessageFormat, vehicleID)));
-				}
 				return this.NoContent();
+			}
+			else
+			{
+				return this.NotFound(new ErrorResponse().SetNotFound(string.Format(CompanyVehicleLoc.NotFoundMessageFormat, vehicleID)));
 			}
 		}
 
