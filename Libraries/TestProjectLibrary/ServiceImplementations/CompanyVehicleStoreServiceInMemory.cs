@@ -14,7 +14,7 @@ namespace TestProjectLibrary.ServiceImplementations
 {
 
 	/// <summary>
-	/// Implementatio of <see cref="ICompanyVehicleStoreService"/> with in-memory store
+	/// Implementation of <see cref="ICompanyVehicleStoreService"/> with in-memory store
 	/// </summary>
 	public class CompanyVehicleStoreServiceInMemory : ICompanyVehicleStoreService
 	{
@@ -39,13 +39,12 @@ namespace TestProjectLibrary.ServiceImplementations
 
 		#region ICompanyVehicleStoreService
 
-		/// <inheritdoc cref="ICompanyVehicleStoreService.GetList"/>
 		IEnumerable<CompanyVehicle> ICompanyVehicleStoreService.GetList()
 		{
-			return this.Store.Values;
+			var orderedValues = this.Store.Values.OrderBy(CompanyVehicle => CompanyVehicle.VehicleID);
+			return orderedValues;
 		}
 
-		/// <inheritdoc cref="ICompanyVehicleStoreService.TryCreateOrUpdate"/>
 		bool ICompanyVehicleStoreService.TryCreateOrUpdate(CompanyVehicle model, [NotNullWhen(false)] out ErrorResponse? error)
 		{
 			error = null;
@@ -65,39 +64,42 @@ namespace TestProjectLibrary.ServiceImplementations
 				}
 			}
 			// Aggiornamento veicolo esistente
-			if (!this.Store.TryGetValue(model.VehicleID, out var existingVehicle))
+			if (this.Store.TryGetValue(model.VehicleID, out var existingVehicle))
+			{
+				existingVehicle.VehicleType = model.VehicleType;
+				existingVehicle.VehicleYearOfProduction = model.VehicleYearOfProduction;
+				existingVehicle.VehicleisActive = model.VehicleisActive;
+
+				if (model.VehicleType == VehicleTypes.Car || model.VehicleType == VehicleTypes.Truck)
+				{
+					existingVehicle.VehicleKm = model.VehicleKm;
+					existingVehicle.VehicleWorkingHours = null;
+				}
+
+				if (model.VehicleType == VehicleTypes.Cruise || model.VehicleType == VehicleTypes.Tractor)
+				{
+					existingVehicle.VehicleWorkingHours = model.VehicleWorkingHours;
+					existingVehicle.VehicleKm = null;
+				}
+				return true;
+			}
+			else
 			{
 				error = new ErrorResponse().SetNotFound(string.Format(CompanyVehicleLoc.NotFoundMessageFormat, model.VehicleID));
 				return false;
 			}
-
-			existingVehicle.VehicleType = model.VehicleType;
-			existingVehicle.VehicleYearOfProduction = model.VehicleYearOfProduction;
-			existingVehicle.VehicleisActive = model.VehicleisActive;
-
-			if (model.VehicleType == VehicleTypes.Car || model.VehicleType == VehicleTypes.Truck)
-				existingVehicle.VehicleKm = model.VehicleKm;
-
-			if (model.VehicleType == VehicleTypes.Cruise || model.VehicleType == VehicleTypes.Tractor)
-				existingVehicle.VehicleWorkingHours = model.VehicleWorkingHours;
-
-			return true;
-
 		}
 
-		/// <inheritdoc cref="ICompanyVehicleStoreService.TryDelete"/>
 		bool ICompanyVehicleStoreService.TryDelete(int id)
 		{
 			return this.Store.TryRemove(id, out _);
 		}
 
-		/// <inheritdoc cref="ICompanyVehicleStoreService.TryRead"/>
 		bool ICompanyVehicleStoreService.TryRead(int id, [NotNullWhen(true)] out CompanyVehicle? model)
 		{
 			return this.Store.TryGetValue(id, out model);
 		}
 
-		/// <inheritdoc cref="ICompanyVehicleStoreService.ResetAndSetLocking"/>
 		void ICompanyVehicleStoreService.ResetAndSetLocking(LockingTypes lockingType)
 		{
 			this.Store.Clear();

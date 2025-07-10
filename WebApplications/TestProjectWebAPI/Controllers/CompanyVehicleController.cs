@@ -8,6 +8,7 @@ using TestProjectLibrary.Models;
 using TestProjectLibrary.Models.Enums;
 using TestProjectLibrary.ServiceImplementations;
 using TestProjectLibrary.Services;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace TestProjectWebAPI.Controllers
 {
@@ -70,7 +71,7 @@ namespace TestProjectWebAPI.Controllers
 		[ProducesResponseType<CompanyVehicle[]>(200, "application/json")]
 		public IActionResult GetCompanyVehiclesList()
 		{
-			return this.Ok(this.StoreService.GetList());		
+			return this.Ok(this.StoreService.GetList());
 		}
 
 		/// <summary>
@@ -92,66 +93,26 @@ namespace TestProjectWebAPI.Controllers
 		{
 			try
 			{
-				//se l'ID è maggiore di 0 ma non esiste
-				if (companyVehicle.VehicleID > 0 && !this.StoreService.TryRead(companyVehicle.VehicleID, out _))
+				var validationErros = companyVehicle.GetValidationErrors();
+				if (validationErros.Count > 0)
 				{
-					return this.NotFound(new ErrorResponse().SetNotFound(string.Format(CompanyVehicleLoc.NotFoundMessageFormat, companyVehicle.VehicleID)));
+					return this.BadRequest(new ErrorResponse().SetValidationErrors(validationErros));
 				}
 
-				//validazioni comuni
-				var errors = new List<ValidationError>();
-
-				//se non viene inserito l'id allora si procede con l'INSERIMENTO di un nuovo veicolo
-				if (companyVehicle.VehicleYearOfProduction < 1900 || companyVehicle.VehicleYearOfProduction > DateTime.Now.Year)
+				//chiamata al servizio
+				if (this.StoreService.TryCreateOrUpdate(companyVehicle, out var errors))
 				{
-					errors.Add(new ValidationError
-					{
-						PropertyName = nameof(companyVehicle.VehicleYearOfProduction),
-						ErrorMessage = string.Format(CompanyVehicleLoc.VehicleYearOfProductionErrorMessageFormat, DateTime.Now.Year)
-					});
+					return this.Ok(companyVehicle);
 				}
-				if (!companyVehicle.VehicleisActive)
+				else
 				{
-					errors.Add(new ValidationError
+					// Se c'è un errore NotFound, lo restituisco con 404
+					if (errors != null && errors.Status == 404)
 					{
-						PropertyName = nameof(companyVehicle.VehicleisActive),
-						ErrorMessage = string.Format(CompanyVehicleLoc.VehicleIsActiveErrorMessageFormat)
-					});
-				}
-				if (companyVehicle.VehicleType == VehicleTypes.Car || companyVehicle.VehicleType == VehicleTypes.Truck)
-				{
-					if (!companyVehicle.VehicleKm.HasValue || companyVehicle.VehicleKm <= 0)
-					{
-						errors.Add(new ValidationError
-						{
-							PropertyName = nameof(companyVehicle.VehicleKm),
-							ErrorMessage = string.Format(CompanyVehicleLoc.VehicleKmErrorMessageFormat)
-						});
+						return this.NotFound(errors);
 					}
+					return this.BadRequest(errors);
 				}
-				if (companyVehicle.VehicleType == VehicleTypes.Cruise || companyVehicle.VehicleType == VehicleTypes.Tractor)
-				{
-					if (!companyVehicle.VehicleWorkingHours.HasValue || companyVehicle.VehicleWorkingHours <= 0)
-					{
-						errors.Add(new ValidationError
-						{
-							PropertyName = nameof(companyVehicle.VehicleWorkingHours),
-							ErrorMessage = string.Format(CompanyVehicleLoc.VehicleWorkingHoursErrorMessageFormat)
-						});
-					}
-				}
-				//se ci sono errori, li restituisco tutti insieme
-				if (errors.Count != 0)
-				{
-					return this.BadRequest(new ErrorResponse().SetValidationErrors(errors));
-				}
-				//se la chiamata al servizio non va a buon fine restituisco l'errore
-				if(!this.StoreService.TryCreateOrUpdate(companyVehicle, out var error))
-				{
-					return this.BadRequest(error);
-				}
-
-				return this.Ok(companyVehicle);
 			}
 			catch (Exception ex)
 			{

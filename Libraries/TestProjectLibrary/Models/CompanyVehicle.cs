@@ -6,6 +6,7 @@ using System.Runtime.Intrinsics.X86;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+using TestProjectLibrary.Localization.Models;
 using TestProjectLibrary.Models.Enums;
 
 namespace TestProjectLibrary.Models
@@ -50,5 +51,55 @@ namespace TestProjectLibrary.Models
 		/// Hours worked by the vehicle (if it is a cruise or tractor)
 		/// </summary>
 		public int? VehicleWorkingHours { get; set; }
+
+		/// <summary>
+		/// Collects all the validation errors that may arise
+		/// </summary>
+		public List<ValidationError> GetValidationErrors()
+		{
+			//validazioni comuni
+			var errors = new List<ValidationError>();
+
+			//se non viene inserito l'id allora si procede con l'INSERIMENTO di un nuovo veicolo
+			if (this.VehicleYearOfProduction < 1900 || this.VehicleYearOfProduction > DateTime.Now.Year)
+			{
+				errors.Add(new ValidationError
+				{
+					PropertyName = nameof(this.VehicleYearOfProduction),
+					ErrorMessage = string.Format(CompanyVehicleLoc.VehicleYearOfProductionErrorMessageFormat, DateTime.Now.Year)
+				});
+			}
+			if (!this.VehicleisActive)
+			{
+				errors.Add(new ValidationError
+				{
+					PropertyName = nameof(this.VehicleisActive),
+					ErrorMessage = string.Format(CompanyVehicleLoc.VehicleIsActiveErrorMessageFormat)
+				});
+			}
+			if (this.VehicleType == VehicleTypes.Car || this.VehicleType == VehicleTypes.Truck)
+			{
+				if (!this.VehicleKm.HasValue || this.VehicleKm <= 0)
+				{
+					errors.Add(new ValidationError
+					{
+						PropertyName = nameof(this.VehicleKm),
+						ErrorMessage = string.Format(CompanyVehicleLoc.VehicleKmErrorMessageFormat)
+					});
+				}
+			}
+			if (this.VehicleType == VehicleTypes.Cruise || this.VehicleType == VehicleTypes.Tractor)
+			{
+				if (!this.VehicleWorkingHours.HasValue || this.VehicleWorkingHours <= 0)
+				{
+					errors.Add(new ValidationError
+					{
+						PropertyName = nameof(this.VehicleWorkingHours),
+						ErrorMessage = string.Format(CompanyVehicleLoc.VehicleWorkingHoursErrorMessageFormat)
+					});
+				}
+			}
+			return errors;
+		}
 	}
 }
