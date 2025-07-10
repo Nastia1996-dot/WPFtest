@@ -19,6 +19,14 @@ namespace TestProjectLibrary.ServiceImplementations
 	public class CompanyVehicleStoreServiceInMemory : ICompanyVehicleStoreService
 	{
 
+		/// <summary>
+		/// New instance of the class
+		/// </summary>
+		public CompanyVehicleStoreServiceInMemory()
+		{
+			this.NewID = this.Store.IsEmpty ? 1 : this.Store.Keys.Max() + 1;
+		}
+
 		#region Properties
 
 		private ConcurrentDictionary<int, CompanyVehicle> Store = new ConcurrentDictionary<int, CompanyVehicle>(new Dictionary<int, CompanyVehicle>()
@@ -33,7 +41,8 @@ namespace TestProjectLibrary.ServiceImplementations
 		/// <inheritdoc cref="LockingTypes"/>
 		public LockingTypes LockingType { get; private set; }
 
-		private int NewID = 0;
+		private int NewID;
+		private object NewIDLocker = new();
 
 		#endregion
 
@@ -47,7 +56,12 @@ namespace TestProjectLibrary.ServiceImplementations
 
 		bool ICompanyVehicleStoreService.TryCreateOrUpdate(CompanyVehicle model, [NotNullWhen(false)] out ErrorResponse? error)
 		{
-			error = null;
+			if (!model.TryValidateModel(out var validationErrors))
+			{
+				error = new ErrorResponse().SetValidationErrors(validationErrors);
+				return false;
+			}
+
 			// Se l'id non viene compilato si procede con l'inserimento di un nuovo veicolo
 			if (model.VehicleID == 0)
 			{
@@ -55,12 +69,15 @@ namespace TestProjectLibrary.ServiceImplementations
 				while (true)
 				{
 					// Genera un nuovo ID
-					var newID = this.Store.Any() ? this.Store.Keys.Max() + 1 : 1;
+					var newID = this.GenerateID();
 					model.VehicleID = newID;
 
 					// Tenta l'inserimento
 					if (this.Store.TryAdd(newID, model))
+					{
+						error = default;
 						return true;
+					}
 				}
 			}
 			// Aggiornamento veicolo esistente
@@ -81,6 +98,7 @@ namespace TestProjectLibrary.ServiceImplementations
 					existingVehicle.VehicleWorkingHours = model.VehicleWorkingHours;
 					existingVehicle.VehicleKm = null;
 				}
+				error = default;
 				return true;
 			}
 			else
@@ -106,6 +124,30 @@ namespace TestProjectLibrary.ServiceImplementations
 			this.LockingType = lockingType;
 			this.NewID = 0;
 		}
+		#endregion
+
+		#region Metodi private
+
+		private int GenerateID()
+		{
+			switch (this.LockingType)
+			{
+				case LockingTypes.NoLock:
+					return ++this.NewID;
+				case LockingTypes.Interlocked:
+					//Nessun altro thread può interferire mentre il valore viene letto, incrementato e riscritto.
+					//L’intera operazione è eseguita in una singola istruzione a basso livello, in modo sicuro e veloce.
+					return Interlocked.Increment(ref this.NewID);
+				case LockingTypes.Lock:
+					lock (this.NewIDLocker)
+					{
+						return ++this.NewID;
+					}
+				default:
+					throw new NotSupportedException(LockingType.ToString());
+			}
+		}
+
 		#endregion
 
 	}
