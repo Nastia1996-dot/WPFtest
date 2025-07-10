@@ -39,11 +39,13 @@ namespace TestProjectWebAPI
 			});
 			if (UseInMemoryStore)
 			{
-				builder.Services.AddSingleton<ICompanyVehicleStoreService, CompanyVehicleStoreServiceInMemory>();
+				builder.Services.AddSingleton<IStoreService<CompanyVehicle>, CompanyVehicleStoreServiceInMemory>();
+				builder.Services.AddSingleton<IStoreService<PersonalComputer>, PersonalComputerStoreServiceInMemory>();
 			}
 			else
 			{
-				builder.Services.AddScoped<ICompanyVehicleStoreService, CompanyVehicleStoreServiceOnDb>();
+				builder.Services.AddScoped<IStoreService<CompanyVehicle>, CompanyVehicleStoreServiceOnDb>();
+				builder.Services.AddScoped<IStoreService<PersonalComputer>, PersonalComputerStoreServiceOnDb>();
 			}
 
 			var app = builder.Build();
@@ -63,7 +65,7 @@ namespace TestProjectWebAPI
 			app.MapControllers();
 
 			app.Run();
-		}
 
+		}
 	}
 }

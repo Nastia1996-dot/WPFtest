@@ -17,7 +17,7 @@ namespace TestProjectLibrary.Models
 	/// <remarks>
 	/// Vehicles of the company
 	/// </remarks>
-	public class CompanyVehicle
+	public class CompanyVehicle : IValidableModel
 	{
 		/// <summary>
 		/// ID of the vehicle
@@ -54,11 +54,8 @@ namespace TestProjectLibrary.Models
 
 
 		#region Methods
-		/// <summary>
-		/// Collects all the validation errors that may arise
-		/// </summary>
-		/// <param name="validationErrors"><c>out</c>: list of validation errors if the validation is failed</param>
-		/// <returns><c>true</c> if the validation is successful, <c>false</c> otherwise</returns>
+
+		/// <inheritdoc cref="IValidableModel.TryValidateModel"/>
 		public bool TryValidateModel(out ValidationError[] validationErrors)
 		{
 			//validazioni comuni
@@ -107,5 +104,17 @@ namespace TestProjectLibrary.Models
 			return validationErrors.Length == 0;
 		}
 		#endregion
+
+		#region IValidableModel
+
+		int IValidableModel.ID
+		{
+			get => this.VehicleID;
+			set => this.VehicleID = value;
+		}
+
+		#endregion
+
 	}
+
 }

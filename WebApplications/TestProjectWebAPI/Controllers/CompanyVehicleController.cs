@@ -19,12 +19,12 @@ namespace TestProjectWebAPI.Controllers
 	[Route("vehicle")]
 	[ProducesResponseType<ErrorResponse>(500, "application/json")]
 
-	public class CompanyVehicleController(ICompanyVehicleStoreService storeService) : ControllerBase
+	public class CompanyVehicleController(IStoreService<CompanyVehicle> storeService) : ControllerBase
 	{
 
 		#region Properties
 
-		private ICompanyVehicleStoreService StoreService { get; } = storeService;
+		private IStoreService<CompanyVehicle> StoreService { get; } = storeService;
 
 		#endregion
 

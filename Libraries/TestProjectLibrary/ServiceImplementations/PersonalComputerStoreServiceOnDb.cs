@@ -12,21 +12,21 @@ namespace TestProjectLibrary.ServiceImplementations
 {
 
 	/// <summary>
-	/// Implementation of <see cref="IStoreService{TModel}"/> for <see cref="CompanyVehicle"/> on database store
+	/// Implementation of <see cref="IStoreService{TModel}"/> for <see cref="PersonalComputer"/> on database store
 	/// </summary>
-	public class CompanyVehicleStoreServiceOnDb : IStoreService<CompanyVehicle>
+	public class PersonalComputerStoreServiceOnDb : IStoreService<PersonalComputer>
 	{
 
-		#region ICompanyVehicleStoreService
+		#region IPersonalComputerStoreService
 
 		/// <inheritdoc cref="IStoreService{TModel}.GetList"/>
-		public IEnumerable<CompanyVehicle> GetList()
+		public IEnumerable<PersonalComputer> GetList()
 		{
 			throw new NotImplementedException("TODO: GetList");
 		}
 
 		/// <inheritdoc cref="IStoreService{TModel}.TryCreateOrUpdate"/>
-		public bool TryCreateOrUpdate(CompanyVehicle model, [NotNullWhen(false)] out ErrorResponse? error)
+		public bool TryCreateOrUpdate(PersonalComputer model, [NotNullWhen(false)] out ErrorResponse? error)
 		{
 			throw new NotImplementedException("TODO: TryCreateOrUpdate");
 		}
@@ -38,12 +38,12 @@ namespace TestProjectLibrary.ServiceImplementations
 		}
 
 		/// <inheritdoc cref="IStoreService{TModel}.TryRead"/>
-		public bool TryRead(int id, [NotNullWhen(true)] out CompanyVehicle? model)
+		public bool TryRead(int id, [NotNullWhen(true)] out PersonalComputer? model)
 		{
 			throw new NotImplementedException("TODO: TryRead");
 		}
 
-		/// <inheritdoc cref="IStoreService{TModel}.ResetAndSetLocking"/>
+		/// <inheridoc cref="IStoreService{TModel}.ResetAndSetLocking"/>
 		public void ResetAndSetLocking(LockingTypes lockingType)
 		{
 			throw new NotImplementedException();

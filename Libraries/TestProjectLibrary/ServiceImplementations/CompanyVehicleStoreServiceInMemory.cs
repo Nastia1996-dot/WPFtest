@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
@@ -14,9 +15,9 @@ namespace TestProjectLibrary.ServiceImplementations
 {
 
 	/// <summary>
-	/// Implementation of <see cref="ICompanyVehicleStoreService"/> with in-memory store
+	/// Implementation of <see cref="IStoreService{TModel}"/> for <see cref="CompanyVehicle"/> with in-memory store
 	/// </summary>
-	public class CompanyVehicleStoreServiceInMemory : ICompanyVehicleStoreService
+	public class CompanyVehicleStoreServiceInMemory : IStoreService<CompanyVehicle>
 	{
 
 		/// <summary>
@@ -48,13 +49,15 @@ namespace TestProjectLibrary.ServiceImplementations
 
 		#region ICompanyVehicleStoreService
 
-		IEnumerable<CompanyVehicle> ICompanyVehicleStoreService.GetList()
+		/// <inheritdoc cref="IStoreService{TModel}.GetList"/>
+		public IEnumerable<CompanyVehicle> GetList()
 		{
 			var orderedValues = this.Store.Values.OrderBy(CompanyVehicle => CompanyVehicle.VehicleID);
 			return orderedValues;
 		}
 
-		bool ICompanyVehicleStoreService.TryCreateOrUpdate(CompanyVehicle model, [NotNullWhen(false)] out ErrorResponse? error)
+		/// <inheritdoc cref="IStoreService{TModel}.TryCreateOrUpdate"/>
+		public bool TryCreateOrUpdate(CompanyVehicle model, [NotNullWhen(false)] out ErrorResponse? error)
 		{
 			if (!model.TryValidateModel(out var validationErrors))
 			{
@@ -108,17 +111,20 @@ namespace TestProjectLibrary.ServiceImplementations
 			}
 		}
 
-		bool ICompanyVehicleStoreService.TryDelete(int id)
+		/// <inheritdoc cref="IStoreService{TModel}.TryDelete"/>
+		public bool TryDelete(int id)
 		{
 			return this.Store.TryRemove(id, out _);
 		}
 
-		bool ICompanyVehicleStoreService.TryRead(int id, [NotNullWhen(true)] out CompanyVehicle? model)
+		/// <inheritdoc cref="IStoreService{TModel}.TryRead"/>
+		public bool TryRead(int id, [NotNullWhen(true)] out CompanyVehicle? model)
 		{
 			return this.Store.TryGetValue(id, out model);
 		}
 
-		void ICompanyVehicleStoreService.ResetAndSetLocking(LockingTypes lockingType)
+		/// <inheritdoc cref="IStoreService{TModel}.ResetAndSetLocking"/>
+		public void ResetAndSetLocking(LockingTypes lockingType)
 		{
 			this.Store.Clear();
 			this.LockingType = lockingType;
