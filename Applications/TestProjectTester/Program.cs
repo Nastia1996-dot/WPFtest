@@ -24,6 +24,10 @@ namespace TestProjectTester
 		private static string? CurrentTestLogDirectory;
 		static async Task Main(string[] args)
 		{
+			DataTableTest.TestInsertAndUpdate();
+			DataTableTest.TestWithReader();
+			DataTableTest.TestWithAdapter();
+
 			using (Log = new StreamWriter("test.log", true, Encoding.UTF8))
 			using (CurrentLog = new StreamWriter("currentTest.log", false, Encoding.UTF8))
 			{

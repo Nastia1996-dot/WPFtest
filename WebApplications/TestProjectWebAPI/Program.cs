@@ -37,6 +37,7 @@ namespace TestProjectWebAPI
 				options.IncludeXmlComments(Path.ChangeExtension(typeof(CompanyVehicle).Assembly.Location, ".xml"));
 				options.IncludeXmlComments(Path.ChangeExtension(typeof(Program).Assembly.Location, ".xml"));
 			});
+			builder.Services.AddSingleton<IDatabaseConnectionSettings>(new DatabaseConnectionSettings() { ConnectionString = "Provider=SQLNCLI11;Data Source=WS-FFORMENTI\\SQLEXPRESS;Persist Security Info=True;Integrated Security=SSPI;Initial Catalog=TestAnastasia" });
 			if (UseInMemoryStore)
 			{
 				builder.Services.AddSingleton<IStoreService<CompanyVehicle>, CompanyVehicleStoreServiceInMemory>();

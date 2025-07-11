@@ -14,8 +14,14 @@ namespace TestProjectLibrary.ServiceImplementations
 	/// <summary>
 	/// Implementation of <see cref="IStoreService{TModel}"/> for <see cref="CompanyVehicle"/> on database store
 	/// </summary>
-	public class CompanyVehicleStoreServiceOnDb : IStoreService<CompanyVehicle>
+	public class CompanyVehicleStoreServiceOnDb(IDatabaseConnectionSettings databaseConnectionSettings) : IStoreService<CompanyVehicle>
 	{
+
+		#region Properties
+
+		private IDatabaseConnectionSettings DatabaseConnectionSettings { get; } = databaseConnectionSettings;
+
+		#endregion
 
 		#region ICompanyVehicleStoreService
 
