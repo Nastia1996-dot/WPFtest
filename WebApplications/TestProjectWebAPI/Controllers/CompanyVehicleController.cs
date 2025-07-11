@@ -71,7 +71,14 @@ namespace TestProjectWebAPI.Controllers
 		[ProducesResponseType<CompanyVehicle[]>(200, "application/json")]
 		public IActionResult GetCompanyVehiclesList()
 		{
-			return this.Ok(this.StoreService.GetList());
+			try
+			{
+				return this.Ok(this.StoreService.GetList());
+			}
+			catch (Exception ex)
+			{
+				return this.StatusCode(500, new ErrorResponse().SetInternalServerErrorInfo(ex.Message));
+			}
 		}
 
 		/// <summary>
@@ -132,13 +139,21 @@ namespace TestProjectWebAPI.Controllers
 		[ProducesResponseType(typeof(ErrorResponse), 404, "application/json")]
 		public IActionResult DeleteVehicle(int vehicleID)
 		{
-			if (this.StoreService.TryDelete(vehicleID))
+			try
 			{
-				return this.NoContent();
+
+				if (this.StoreService.TryDelete(vehicleID))
+				{
+					return this.NoContent();
+				}
+				else
+				{
+					return this.NotFound(new ErrorResponse().SetNotFound(string.Format(CompanyVehicleLoc.NotFoundMessageFormat, vehicleID)));
+				}
 			}
-			else
+			catch (Exception ex)
 			{
-				return this.NotFound(new ErrorResponse().SetNotFound(string.Format(CompanyVehicleLoc.NotFoundMessageFormat, vehicleID)));
+				return this.StatusCode(500, new ErrorResponse().SetInternalServerErrorInfo(ex.Message));
 			}
 		}
 
@@ -153,9 +168,15 @@ namespace TestProjectWebAPI.Controllers
 		[ProducesResponseType(204)]
 		public IActionResult ResetVehiclesAndSetLocking(LockingTypes lockingType)
 		{
-			this.StoreService.ResetAndSetLocking(lockingType);
-
-			return this.NoContent();
+			try
+			{
+				this.StoreService.ResetAndSetLocking(lockingType);
+				return this.NoContent();
+			}
+			catch (Exception ex)
+			{
+				return this.StatusCode(500, new ErrorResponse().SetInternalServerErrorInfo(ex.Message));
+			}
 		}
 
 	}

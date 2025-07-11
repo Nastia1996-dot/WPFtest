@@ -31,10 +31,10 @@ namespace TestProjectLibrary.ServiceImplementations
 
 		private ConcurrentDictionary<int, PersonalComputer> Store = new ConcurrentDictionary<int, PersonalComputer>(new Dictionary<int, PersonalComputer>()
 		{
-			{ 996, new PersonalComputer() { PersonalComputerID = 996, } },
-			{ 997, new PersonalComputer() { PersonalComputerID = 997, } },
-			{ 998, new PersonalComputer() { PersonalComputerID = 998, } },
-			{ 999, new PersonalComputer() { PersonalComputerID = 999, } },
+			{ 996, new PersonalComputer() { PersonalComputerID = 996, PcModelName= "Dell XPS 15 9530", PcRamInGB= 32, PcCPU= "Intel Core i7-13700H", PcStorage= "1TB NVMe SSD"} },
+			{ 997, new PersonalComputer() { PersonalComputerID = 997,PcModelName="MacBook Pro 16\" M2", PcRamInGB=16 , PcCPU="Apple M2 Pro", PcStorage="512GB SSD" } },
+			{ 998, new PersonalComputer() { PersonalComputerID = 998, PcModelName= "Lenovo ThinkPad T14 Gen 3", PcRamInGB=16 , PcCPU="AMD Ryzen 7 PRO 6850U", PcStorage= "1TB SSD"} },
+			{ 999, new PersonalComputer() { PersonalComputerID = 999,PcModelName= "HP EliteBook 840 G10", PcRamInGB= 8, PcCPU="Intel Core i5-1335U", PcStorage="256GB SSD"} },
 		});
 
 
@@ -64,7 +64,7 @@ namespace TestProjectLibrary.ServiceImplementations
 				return false;
 			}
 
-			// Se l'id non viene compilato si procede con l'inserimento di un nuovo veicolo
+			// Se l'id non viene compilato si procede con l'inserimento di un nuovo pc
 			if (model.PersonalComputerID == 0)
 			{
 				//generazione ID fittizia
@@ -82,33 +82,22 @@ namespace TestProjectLibrary.ServiceImplementations
 					}
 				}
 			}
-			// Aggiornamento veicolo esistente
-			throw new NotImplementedException("TODO: implementare");
-			//if (this.Store.TryGetValue(model.PersonalComputerID, out var existingVehicle))
-			//{
-			//	existingVehicle.VehicleType = model.VehicleType;
-			//	existingVehicle.VehicleYearOfProduction = model.VehicleYearOfProduction;
-			//	existingVehicle.VehicleisActive = model.VehicleisActive;
-
-			//	if (model.VehicleType == VehicleTypes.Car || model.VehicleType == VehicleTypes.Truck)
-			//	{
-			//		existingVehicle.VehicleKm = model.VehicleKm;
-			//		existingVehicle.VehicleWorkingHours = null;
-			//	}
-
-			//	if (model.VehicleType == VehicleTypes.Cruise || model.VehicleType == VehicleTypes.Tractor)
-			//	{
-			//		existingVehicle.VehicleWorkingHours = model.VehicleWorkingHours;
-			//		existingVehicle.VehicleKm = null;
-			//	}
-			//	error = default;
-			//	return true;
-			//}
-			//else
-			//{
-			//	error = new ErrorResponse().SetNotFound(string.Format(PersonalComputerLoc.NotFoundMessageFormat, model.PersonalComputerID));
-			//	return false;
-			//}
+			// Aggiornamento pc esistente
+			if (this.Store.TryGetValue(model.PersonalComputerID, out var existingPersonalComputer))
+			{
+				existingPersonalComputer.PersonalComputerID = model.PersonalComputerID;
+				existingPersonalComputer.PcModelName = model.PcModelName;
+				existingPersonalComputer.PcRamInGB = model.PcRamInGB;
+				existingPersonalComputer.PcCPU = model.PcCPU;
+				existingPersonalComputer.PcStorage = model.PcCPU;
+				error = default;
+				return true;
+			}
+			else
+			{
+				error = new ErrorResponse().SetNotFound(string.Format(PersonalComputerLoc.NotFoundMessageFormat, model.PersonalComputerID));
+				return false;
+			}
 		}
 
 		/// <inheritdoc cref="IStoreService{TModel}.TryDelete" />

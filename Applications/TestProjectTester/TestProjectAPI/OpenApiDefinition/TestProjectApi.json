@@ -239,6 +239,251 @@
         }
       }
     },
+    "/computer/{personalComputerID}": {
+      "get": {
+        "tags": [
+          "PersonalComputer"
+        ],
+        "summary": "GetPcByID",
+        "description": "Shows personal computers details by its ID",
+        "parameters": [
+          {
+            "name": "personalComputerID",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "An internal server error has occurred",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Get successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonalComputer"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "PersonalComputer"
+        ],
+        "summary": "DeletePc",
+        "description": "Deletes a personal computer from the list",
+        "parameters": [
+          {
+            "name": "personalComputerId",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "An internal server error has occurred",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "Delete successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonalComputer"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/computer": {
+      "get": {
+        "tags": [
+          "PersonalComputer"
+        ],
+        "summary": "GetPersonalComputersList",
+        "description": "Get a list of all personal computers",
+        "responses": {
+          "500": {
+            "description": "An internal server error has occurred",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Get successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonalComputer"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "PersonalComputer"
+        ],
+        "summary": "PostCreateOrUpdatePc",
+        "description": "Create a new personal computer if the ID is not present or update an existing one if it exists.",
+        "requestBody": {
+          "description": "The personal computer to create or update",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PersonalComputer"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PersonalComputer"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/PersonalComputer"
+              }
+            }
+          }
+        },
+        "responses": {
+          "500": {
+            "description": "An internal server error has occurred",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Post successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonalComputer"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A structure containing validation errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/computer/reset/{lockingType}": {
+      "post": {
+        "tags": [
+          "PersonalComputer"
+        ],
+        "summary": "ResetPcAndSetLocking",
+        "description": "Reset the pc's list and sets Locking Type: no lock, lock and interlocked",
+        "parameters": [
+          {
+            "name": "lockingType",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/LockingTypes"
+            }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "An internal server error has occurred",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "Reset successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/weather/forecast": {
       "get": {
         "tags": [
@@ -460,11 +705,49 @@
       "LockingTypes": {
         "enum": [
           "NoLock",
-          "Interlocked",
-          "Lock"
+          "Lock",
+          "Interlocked"
         ],
         "type": "string",
-        "description": "Tipi di lock"
+        "description": "Locking Types"
+      },
+      "PersonalComputer": {
+        "required": [
+          "pcCPU",
+          "pcModelName",
+          "pcRamInGB",
+          "pcStorage"
+        ],
+        "type": "object",
+        "properties": {
+          "personalComputerID": {
+            "type": "integer",
+            "description": "ID of the personal computer",
+            "format": "int32"
+          },
+          "pcModelName": {
+            "minLength": 1,
+            "type": "string",
+            "description": "Name or model of the computer"
+          },
+          "pcRamInGB": {
+            "type": "integer",
+            "description": "Installed RAM in gigabytes.",
+            "format": "int32"
+          },
+          "pcCPU": {
+            "minLength": 1,
+            "type": "string",
+            "description": "Processor type"
+          },
+          "pcStorage": {
+            "minLength": 1,
+            "type": "string",
+            "description": "Type and size of the main storage"
+          }
+        },
+        "additionalProperties": false,
+        "description": "PersonalComputer"
       },
       "ValidationError": {
         "type": "object",

@@ -16,11 +16,20 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>CompanyVehicleLoc.resx</DependentUpon>
     </Compile>
+    <Compile Update="Localization\Models\PersonalComputerLoc.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>PersonalComputerLoc.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Update="Localization\Models\CompanyVehicleLoc.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>CompanyVehicleLoc.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Localization\Models\PersonalComputerLoc.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>PersonalComputerLoc.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
 

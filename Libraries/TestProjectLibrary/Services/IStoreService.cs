@@ -21,28 +21,28 @@ namespace TestProjectLibrary.Services
 		#region Methods
 
 		/// <summary>
-		/// Try to read a vehicle
+		/// Try to read a model
 		/// </summary>
 		/// <param name="id"><inheritdoc cref="IValidableModel.ID" path="/summary"/></param>
-		/// <param name="model"><c>out</c>: vehicle data if exists, <c>null</c> otherwise</param>
-		/// <returns><c>true</c> if the vehicle exists, <c>false</c> otherwise</returns>
+		/// <param name="model"><c>out</c>: model data if exists, <c>null</c> otherwise</param>
+		/// <returns><c>true</c> if the model exists, <c>false</c> otherwise</returns>
 		bool TryRead(int id, [NotNullWhen(true)] out TModel? model);
 
 		/// <summary>
-		/// Get the full list of company vehicles
+		/// Get the full list of models
 		/// </summary>
 		/// <returns></returns>
 		IEnumerable<TModel> GetList();
 
 		/// <summary>
-		/// Create or update a vehicle
+		/// Create or update a model
 		/// </summary>
 		/// <param name="model">
-		/// Vehicle to create or update.
+		/// Model to create or update.
 		/// Based on the value of <see cref="IValidableModel.ID"/>:
 		/// <list type="bullet">
-		/// <item>If 0 or less: a new vehicle is created</item>
-		/// <item>If more than 0: the vehicle with the selected id is updated</item>
+		/// <item>If 0 or less: a new model is created</item>
+		/// <item>If more than 0: the model with the selected id is updated</item>
 		/// </list>
 		/// </param>
 		/// <param name="error"><c>out</c>: if the return value is <c>false</c>, contains the error details</param>
@@ -50,7 +50,7 @@ namespace TestProjectLibrary.Services
 		bool TryCreateOrUpdate(TModel model, [NotNullWhen(false)] out ErrorResponse? error);
 
 		/// <summary>
-		/// Try to delete a vehicle
+		/// Try to delete a model
 		/// </summary>
 		/// <param name="id"><inheritdoc cref="IValidableModel.ID" path="/summary"/></param>
 		/// <returns><c>true</c> if the deletion has been performed successfully, <c>false</c> if the record has not been found</returns>

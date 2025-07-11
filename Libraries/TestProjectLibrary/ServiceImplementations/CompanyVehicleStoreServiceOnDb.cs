@@ -46,7 +46,7 @@ namespace TestProjectLibrary.ServiceImplementations
 		/// <inheritdoc cref="IStoreService{TModel}.ResetAndSetLocking"/>
 		public void ResetAndSetLocking(LockingTypes lockingType)
 		{
-			throw new NotImplementedException();
+			throw new NotSupportedException();
 		}
 		#endregion
 
