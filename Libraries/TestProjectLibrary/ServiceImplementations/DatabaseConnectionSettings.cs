@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,6 +16,7 @@ namespace TestProjectLibrary.ServiceImplementations
 		#region Properties
 
 		/// <inheritdoc cref="IDatabaseConnectionSettings.ConnectionString"/>
+		[Required]
 		public string ConnectionString { get; set; }
 
 		#endregion
