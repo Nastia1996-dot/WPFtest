@@ -70,14 +70,14 @@ namespace TestProjectLibrary.Models
 					ErrorMessage = string.Format(CompanyVehicleLoc.VehicleYearOfProductionErrorMessageFormat, DateTime.Now.Year)
 				});
 			}
-			if (!this.VehicleisActive)
-			{
-				errors.Add(new ValidationError
-				{
-					PropertyName = nameof(this.VehicleisActive),
-					ErrorMessage = string.Format(CompanyVehicleLoc.VehicleIsActiveErrorMessageFormat)
-				});
-			}
+			//if (!this.VehicleisActive)
+			//{
+			//	errors.Add(new ValidationError
+			//	{
+			//		PropertyName = nameof(this.VehicleisActive),
+			//		ErrorMessage = string.Format(CompanyVehicleLoc.VehicleIsActiveErrorMessageFormat)
+			//	});
+			//}
 			if (this.VehicleType == VehicleTypes.Car || this.VehicleType == VehicleTypes.Truck)
 			{
 				if (!this.VehicleKm.HasValue || this.VehicleKm <= 0)

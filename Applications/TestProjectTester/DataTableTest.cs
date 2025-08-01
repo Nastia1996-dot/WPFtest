@@ -91,7 +91,7 @@ namespace TestProjectTester
 INSERT INTO [dbo].[NSCompanyVehicles]
            ([CV_VehicleName]
            ,[CV_VehicleKm]
-           ,[CT_VehicleType]
+           ,[CV_VehicleType]
            ,[CV_WorkingHours]
            ,[CV_PurchaseCost]
            ,[CV_PurchaseDate]

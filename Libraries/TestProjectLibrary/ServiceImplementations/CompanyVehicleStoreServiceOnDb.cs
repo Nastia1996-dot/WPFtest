@@ -1,6 +1,9 @@
 ﻿using System.Data;
+using System.Data.Common;
 using System.Data.OleDb;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.Reflection.PortableExecutable;
 using System.Runtime.Versioning;
 using TestProjectLibrary.Localization.Models;
 using TestProjectLibrary.Models;
@@ -13,18 +16,20 @@ namespace TestProjectLibrary.ServiceImplementations
 	/// <summary>
 	/// Implementation of <see cref="IStoreService{TModel}"/> for <see cref="CompanyVehicle"/> on database store
 	/// </summary>
+	[SupportedOSPlatform("windows")]
 	public class CompanyVehicleStoreServiceOnDb(IDatabaseConnectionSettings databaseConnectionSettings) : IStoreService<CompanyVehicle>
 	{
 
 		#region Properties
 		private IDatabaseConnectionSettings DatabaseConnectionSettings { get; } = databaseConnectionSettings;
 
-		//Oledb è legata strettamente a Windows, su linux o macOS non funziona
-		[SupportedOSPlatform("windows")]
+		private static bool UseQueryParameters { get; set; } = true;
+
 		#endregion
 
 		#region ICompanyVehicleStoreService
 
+		//Oledb è legata strettamente a Windows, su linux o macOS non funziona
 		private static IDbConnection GetDataConnection()
 		{
 			return new OleDbConnection()
@@ -36,8 +41,6 @@ namespace TestProjectLibrary.ServiceImplementations
 		/// <inheritdoc cref="IStoreService{TModel}.GetList"/>
 		public IEnumerable<CompanyVehicle> GetList()
 		{
-			//crea una lista vuota che conterrà tutti i veicoli 
-			var result = new List<CompanyVehicle>();
 			//apre una connessione al database
 			using var connection = GetDataConnection();
 			connection.Open(); //da questo momento in poi posso eseguire comandi SQL perché apro la connessione
@@ -45,29 +48,17 @@ namespace TestProjectLibrary.ServiceImplementations
 			{
 				using var command = connection.CreateCommand();
 				command.Parameters.Clear();
-				command.CommandText = "SELECT * FROM NSCompanyVehicles";
+				command.CommandText = "SELECT CV_CompanyVehicleID, CV_VehicleType, CV_YearOfProduction, CV_VehicleState, CV_VehicleKm, CV_WorkingHours FROM NSCompanyVehicles";
 				using var reader = command.ExecuteReader(); //esegue il comando e restituisce un lettore per leggere riga per riga i dati
-
 				while (reader.Read())
 				{
-					var vehicle = new CompanyVehicle
-					{
-						VehicleID = reader.GetInt32(reader.GetOrdinal("CV_CompanyVehicleID")),
-						VehicleType = Enum.Parse<VehicleTypes>(reader.GetString(reader.GetOrdinal("CV_VehicleType"))),
-						VehicleYearOfProduction = reader.GetInt32(reader.GetOrdinal("CV_YearOfProduction")),
-						VehicleisActive = reader.GetBoolean(reader.GetOrdinal("CV_VehicleState")),
-						VehicleKm = reader.IsDBNull(reader.GetOrdinal("CV_VehicleKm")) ? null : reader.GetDecimal(reader.GetOrdinal("CV_VehicleKm")),
-						VehicleWorkingHours = reader.IsDBNull(reader.GetOrdinal("CV_VehicleWorkingHours")) ? null : reader.GetInt32(reader.GetOrdinal("CV_VehicleWorkingHours"))
-					};
-					result.Add(vehicle);
+					yield return this.ReadCompanyVehicle(reader);
 				}
 			}
 			finally
 			{
 				connection.Close();
-
 			}
-			return result;
 		}
 
 		/// <inheritdoc cref="IStoreService{TModel}.TryCreateOrUpdate"/>
@@ -88,20 +79,46 @@ namespace TestProjectLibrary.ServiceImplementations
 			try
 			{
 
-				if (model.VehicleID == 0)
+				if (model.VehicleID <= 0) //---INSERT----
 				{
 					cmd.Parameters.Clear();
 					//nuovo veicolo
-					//i ? sono segnaposto (placeholder) usati nelle query parametrizzate, vengono sostituiti 
-					cmd.CommandText = @"INSERT INTO NSCompanyVehicles ( CV_VehicleType, CV_YearOfProduction, CV_VehicleState, CV_VehicleKm, CV_VehicleWorkingHours) " +
-						"VALUES (?, ?, ?, ?, ?);" +
-						"SELECT SCOPE_IDENTITY()"; //funzione che permette di ottenere l'ID appena generato dal db
+					if (UseQueryParameters)
+					{
+						//i ? sono segnaposto (placeholder) usati nelle query parametrizzate, vengono sostituiti 
+						cmd.CommandText = @"INSERT INTO NSCompanyVehicles ( CV_VehicleName, CV_VehicleType, CV_YearOfProduction, CV_VehicleState, CV_VehicleKm, CV_WorkingHours) 
+VALUES (?, ?, ?, ?, ?, ?);
+SELECT SCOPE_IDENTITY()
+"; //funzione che permette di ottenere l'ID appena generato dal db
 
-					cmd.Parameters.Add(CreateParam(cmd, model.VehicleType));
-					cmd.Parameters.Add(CreateParam(cmd, model.VehicleYearOfProduction));
-					cmd.Parameters.Add(CreateParam(cmd, model.VehicleisActive));
-					cmd.Parameters.Add(CreateParam(cmd, (object?)model.VehicleKm ?? DBNull.Value));
-					cmd.Parameters.Add(CreateParam(cmd, (object?)model.VehicleWorkingHours ?? DBNull.Value));
+						cmd.Parameters.Add(CreateParam(cmd, FormatVehicleType(model.VehicleType)));
+						cmd.Parameters.Add(CreateParam(cmd, FormatVehicleType(model.VehicleType)));
+						cmd.Parameters.Add(CreateParam(cmd, model.VehicleYearOfProduction));
+						cmd.Parameters.Add(CreateParam(cmd, FormatVehicleIsActive(model.VehicleisActive)));
+						cmd.Parameters.Add(CreateParam(cmd, (object?)model.VehicleKm ?? DBNull.Value));
+						cmd.Parameters.Add(CreateParam(cmd, (object?)model.VehicleWorkingHours ?? DBNull.Value));
+					}
+					else
+					{
+						cmd.CommandText = $@"INSERT INTO NSCompanyVehicles (
+	CV_VehicleName
+	, CV_VehicleType
+	, CV_YearOfProduction
+	, CV_VehicleState
+	, CV_VehicleKm
+	, CV_WorkingHours
+) 
+VALUES (
+	{GetSQLFormattedValue(FormatVehicleType(model.VehicleType))}
+	, {GetSQLFormattedValue(FormatVehicleType(model.VehicleType))}
+	, {GetSQLFormattedValue(model.VehicleYearOfProduction)}
+	, {GetSQLFormattedValue(FormatVehicleIsActive(model.VehicleisActive))}
+	, {GetSQLFormattedValue(model.VehicleKm)}
+	, {GetSQLFormattedValue(model.VehicleWorkingHours)}
+);
+SELECT SCOPE_IDENTITY()
+"; //funzione che permette di ottenere l'ID appena generato dal db
+					}
 
 					var newID = Convert.ToInt32(cmd.ExecuteScalar()); //metodo per leggere il nuovo id
 					model.VehicleID = newID;
@@ -110,31 +127,25 @@ namespace TestProjectLibrary.ServiceImplementations
 					error = null;
 					return true;
 				}
-				else
+				else //---UPDATE----
 				{
-					cmd.CommandText = "SELECT CV_CompanyVehicleID FROM NSCompanyVehicles " +
-						$"WHERE CV_CompanyVehicleID = {model.VehicleID}";
-					
-					using var reader = cmd.ExecuteReader();
 
-					//verifico che l'id esista
-					if (reader.Read())
+					cmd.Parameters.Clear();
+					//aggiorno su db
+					cmd.CommandText = @"UPDATE NSCompanyVehicles
+SET CV_VehicleType = ? , CV_YearOfProduction = ?, CV_VehicleState= ?, CV_VehicleKm = ?, CV_WorkingHours = ? 
+WHERE CV_CompanyVehicleID = ?
+";
+
+					//param devono esssere nello stesso ordine!!
+					cmd.Parameters.Add(CreateParam(cmd, FormatVehicleType(model.VehicleType)));
+					cmd.Parameters.Add(CreateParam(cmd, model.VehicleYearOfProduction));
+					cmd.Parameters.Add(CreateParam(cmd, FormatVehicleIsActive(model.VehicleisActive)));
+					cmd.Parameters.Add(CreateParam(cmd, (object?)model.VehicleKm ?? DBNull.Value));
+					cmd.Parameters.Add(CreateParam(cmd, (object?)model.VehicleWorkingHours ?? DBNull.Value));
+					cmd.Parameters.Add(CreateParam(cmd, model.VehicleID));
+					if (cmd.ExecuteNonQuery() > 0)
 					{
-						reader.Close();
-						cmd.Parameters.Clear();
-						//aggiorno su db
-						cmd.CommandText = @"UPDATE NSCompanyVehicles" +
-							"SET CV_VehicleType = ? , CV_YearOfProduction = ?, CV_VehicleState= ?, CV_VehicleKm = ?, CV_VehicleWorkingHours = ? " +
-							"WHERE CV_CompanyVehicleID = ?";
-
-						//param devono esssere nello stesso ordine!!
-						cmd.Parameters.Add(CreateParam(cmd, model.VehicleType));
-						cmd.Parameters.Add(CreateParam(cmd, model.VehicleYearOfProduction));
-						cmd.Parameters.Add(CreateParam(cmd, model.VehicleisActive));
-						cmd.Parameters.Add(CreateParam(cmd, (object?)model.VehicleKm ?? DBNull.Value));
-						cmd.Parameters.Add(CreateParam(cmd, (object?)model.VehicleWorkingHours ?? DBNull.Value));
-						cmd.Parameters.Add(CreateParam(cmd, model.VehicleID));
-
 						error = null;
 						return true;
 					}
@@ -191,7 +202,7 @@ namespace TestProjectLibrary.ServiceImplementations
 		}
 
 		/// <inheritdoc cref="IStoreService{TModel}.TryRead"/>
-		public bool TryRead(int id, [NotNullWhen(true)] out CompanyVehicle? model)
+		public bool TryRead(int id, [NotNullWhen(true)] out CompanyVehicle? vehicle)
 		{
 
 			//crea var dove salvare il risultato letto
@@ -202,7 +213,7 @@ namespace TestProjectLibrary.ServiceImplementations
 			{
 				using var command = connection.CreateCommand();
 				command.Parameters.Clear();
-				command.CommandText = $"SELECT CV_CompanyVehicleID, CV_VehicleType, CV_YearOfProduction, CV_VehicleState, CV_VehicleKm, CV_VehicleWorkingHours " +
+				command.CommandText = $"SELECT CV_CompanyVehicleID, CV_VehicleType, CV_YearOfProduction, CV_VehicleState, CV_VehicleKm, CV_WorkingHours " +
 									  $"FROM NSCompanyVehicles " +
 									  $"WHERE CV_CompanyVehicleID = ? ";
 
@@ -214,18 +225,12 @@ namespace TestProjectLibrary.ServiceImplementations
 
 				if (reader.Read())
 				{
-					model = new CompanyVehicle {
-						VehicleType = Enum.Parse<VehicleTypes>(reader.GetString(reader.GetOrdinal("CV_VehicleType"))),
-						VehicleYearOfProduction = reader.GetInt32(reader.GetOrdinal("CV_YearOfProduction")),
-						VehicleisActive = reader.GetBoolean(reader.GetOrdinal("CV_VehicleState")),
-						VehicleKm = reader.IsDBNull(reader.GetOrdinal("CV_VehicleKm")) ? null : reader.GetInt32(reader.GetOrdinal("CV_VehicleKm")),
-						VehicleWorkingHours = reader.IsDBNull(reader.GetOrdinal("CV_VehicleWorkingHours")) ? null : reader.GetInt32(reader.GetOrdinal("CV_VehicleWorkingHours"))
-					};
+					vehicle = this.ReadCompanyVehicle(reader);
 					return true;
 				}
 				else
 				{
-					model = null;
+					vehicle = null;
 					return false;
 				}
 			}
@@ -252,6 +257,94 @@ namespace TestProjectLibrary.ServiceImplementations
 			param.Value = value;
 			return param;
 		}
+
+		private static VehicleTypes ParseVehicleType(string vehicleType)
+		{
+			switch (vehicleType.ToUpper())
+			{
+				case "C":
+					return VehicleTypes.Car;
+				case "T":
+					return VehicleTypes.Truck;
+				case "B":
+					return VehicleTypes.Cruise;
+				case "R":
+					return VehicleTypes.Tractor;
+				default:
+					throw new ArgumentOutOfRangeException(nameof(vehicleType), vehicleType);
+			}
+		}
+		private static string FormatVehicleType(VehicleTypes vehicleType)
+		{
+			return vehicleType switch
+			{
+				VehicleTypes.Car => "C",
+				VehicleTypes.Truck => "T",
+				VehicleTypes.Cruise => "B",
+				VehicleTypes.Tractor => "R",
+				_ => throw new ArgumentOutOfRangeException(nameof(vehicleType), vehicleType, null)
+			};
+		}
+
+		private static bool ParseVehicleIsActive(string state)
+		{
+			switch (state.ToUpper())
+			{
+				case "O":
+					return true;
+				case "R":
+				case "F":
+					return false;
+				default:
+					throw new ArgumentOutOfRangeException(nameof(state), state);
+			}
+		}
+		private static string FormatVehicleIsActive(bool isActive)
+		{
+			return isActive ? "O" : "R";
+		}
+		/// <summary>
+		/// Read all vehicle's properties
+		/// </summary>
+		/// <param name="reader"></param>
+		/// <returns></returns>
+		public CompanyVehicle ReadCompanyVehicle(IDataReader reader)
+		{
+
+			return new CompanyVehicle
+			{
+				VehicleID = reader.GetInt32(reader.GetOrdinal("CV_CompanyVehicleID")),
+				VehicleType = ParseVehicleType(reader.GetString(reader.GetOrdinal("CV_VehicleType"))),
+				VehicleYearOfProduction = reader.GetInt32(reader.GetOrdinal("CV_YearOfProduction")),
+				VehicleisActive = reader.IsDBNull(reader.GetOrdinal("CV_VehicleState")) ? false : ParseVehicleIsActive(reader.GetString(reader.GetOrdinal("CV_VehicleState"))),
+				VehicleKm = reader.IsDBNull(reader.GetOrdinal("CV_VehicleKm")) ? null : reader.GetInt32(reader.GetOrdinal("CV_VehicleKm")),
+				VehicleWorkingHours = reader.IsDBNull(reader.GetOrdinal("CV_WorkingHours")) ? null : reader.GetInt32(reader.GetOrdinal("CV_WorkingHours")),
+			};
+
+		}
+
+		private static string GetSQLFormattedValue(string? value)
+		{
+			if (string.IsNullOrEmpty(value))
+			{
+				return "NULL";
+			}
+			else
+			{
+				return $"'{value.Replace("'", "''")}'";
+			}
+		}
+
+		private static string GetSQLFormattedValue(int? value)
+		{
+			return value?.ToString(CultureInfo.InvariantCulture) ?? "NULL";
+		}
+
+		private static string GetSQLFormattedValue(decimal? value)
+		{
+			return value?.ToString(CultureInfo.InvariantCulture) ?? "NULL";
+		}
+
 		#endregion
 	}
 

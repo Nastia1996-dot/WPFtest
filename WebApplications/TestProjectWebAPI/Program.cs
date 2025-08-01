@@ -13,7 +13,7 @@ namespace TestProjectWebAPI
 	public class Program
 	{
 
-		private static bool UseInMemoryStore = true;
+		private static bool UseInMemoryStore = false;
 
 		/// <summary>
 		/// Main method of the application
