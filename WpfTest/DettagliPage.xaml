@@ -1,0 +1,43 @@
+﻿<Page x:Class="WpfTest.DettagliPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:WpfTest"
+      mc:Ignorable="d" 
+      d:DesignHeight="500" d:DesignWidth="500"
+      Title="DettagliPage">
+
+    <Grid HorizontalAlignment="Center">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition Height="auto"></RowDefinition>
+            <RowDefinition Height="auto"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto"></ColumnDefinition>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        
+    
+        <Image Grid.ColumnSpan="2" x:Name="imgGatto" Height="150" Margin="10"></Image>
+
+        <Label Grid.Row="1" Grid.Column="0" Content="Nome:" FontWeight="Bold"  VerticalAlignment="Center" 
+       Padding="0" Margin="5"></Label>
+        <Label Grid.Row="2" Grid.Column="0" Content="Età:" FontWeight="Bold"  VerticalAlignment="Center" 
+       Padding="0" Margin="5"></Label>
+        <Label Grid.Row="3" Grid.Column="0" Content="Descrizione:" FontWeight="Bold"  VerticalAlignment="Center" 
+       Padding="0" Margin="5"></Label>
+        <Button Grid.Row="4" Grid.ColumnSpan="2" x:Name="btnCalcolaEta" Content="Calcola età umana" Width="150" Margin="5" Click="btnCalcolaEta_Click" ></Button>
+
+
+        <TextBlock  Grid.Row="1" Grid.Column="1" x:Name="txtNome" VerticalAlignment="Center"></TextBlock>
+        <TextBlock  Grid.Row="2" Grid.Column="1" x:Name="txtEta" VerticalAlignment="Center"></TextBlock>
+        <TextBlock  Grid.Row="3" Grid.Column="1" x:Name="txtDescrizione" VerticalAlignment="Center"/>
+        <TextBlock Grid.Row="5" Grid.ColumnSpan="2" TextAlignment="Center" x:Name="txtCalcoloEta" Margin="5" ></TextBlock>
+      
+    </Grid>
+</Page>

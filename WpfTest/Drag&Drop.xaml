@@ -1,0 +1,84 @@
+﻿<Window x:Class="WpfTest.Drag_Drop"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WpfTest"
+        mc:Ignorable="d"
+        Title="Drag and Drop Demo" Height="450" Width="800"
+        Background="#f5f7fa"
+        FontFamily="Segoe UI"
+        FontSize="14">
+
+    <DockPanel Margin="10">
+
+        <!-- Titolo -->
+        <TextBlock DockPanel.Dock="Top" 
+                   Text="Trascina gli oggetti verso l'area di rilascio"
+                   FontSize="18"
+                   FontWeight="SemiBold"
+                   Foreground="#2c3e50"
+                   Margin="10"
+                   HorizontalAlignment="Center" />
+
+        <Grid DockPanel.Dock="Top" Background="WhiteSmoke" Margin="10" Height="250" >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="2*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Oggetti trascinabili -->
+            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                <Border x:Name="Oggetto1" Background="#3498db" CornerRadius="8" Margin="10" Padding="10" Width="150" Height="50"
+                        MouseMove="oggetto1_MouseMove"
+                        PreviewMouseLeftButtonDown="oggetto1_PreviewMouseLeftButtonDown"
+                        Cursor="Hand"
+                        
+                       >
+                    <TextBlock x:Name="txtOggetto1"
+                               Text="Oggetto1"
+                               Foreground="White"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               FontWeight="Bold" 
+                    />
+                </Border>
+
+                <Border x:Name="Oggetto2" Background="#e67e22" CornerRadius="8" Margin="10" Padding="10" Width="150" Height="50"
+                        MouseMove="oggetto2_MouseMove"
+                        PreviewMouseLeftButtonDown="oggetto2_PreviewMouseLeftButtonDown"
+                        Cursor="Hand"
+                       >
+                    <TextBlock x:Name="txtOggetto2"
+                               Text="Oggetto2"
+                               Foreground="White"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               FontWeight="Bold"></TextBlock>
+
+                </Border>
+
+
+            </StackPanel>
+
+            <!-- Area di rilascio -->
+            <Border Grid.Column="1" x:Name="DropZone"
+                    BorderBrush="#bdc3c7"
+                    BorderThickness="2"
+                    CornerRadius="10"
+                    Background="#ecf0f1"
+                    Margin="30"
+                    AllowDrop="True"
+                    Drop="DropZone_Drop"
+                    DragOver="DropZone_DragOver">
+                <TextBlock Text="🎯 Rilascia qui"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           FontSize="16"
+                           Foreground="#7f8c8d"
+                           FontStyle="Italic" />
+            </Border>
+
+        </Grid>
+    </DockPanel>
+</Window>

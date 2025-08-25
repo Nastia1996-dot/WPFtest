@@ -1,0 +1,810 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "TestProjectWebAPI",
+    "version": "1.0"
+  },
+  "paths": {
+    "/vehicle/{vehicleID}": {
+      "get": {
+        "tags": [
+          "CompanyVehicle"
+        ],
+        "summary": "GetVehicleByID",
+        "description": "Get vehicle by its ID",
+        "parameters": [
+          {
+            "name": "vehicleID",
+            "in": "path",
+            "description": "Id of the vehicle to get",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "An internal server error has occurred",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Get successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyVehicle"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "CompanyVehicle"
+        ],
+        "summary": "DeleteVehicle",
+        "description": "Delete a vehicle from the list",
+        "parameters": [
+          {
+            "name": "vehicleID",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "An internal server error has occurred",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "Delete successful"
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/vehicle": {
+      "get": {
+        "tags": [
+          "CompanyVehicle"
+        ],
+        "summary": "GetCompanyVehiclesList",
+        "description": "Get a list of the company vehicles",
+        "responses": {
+          "500": {
+            "description": "An internal server error has occurred",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Get successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CompanyVehicle"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "CompanyVehicle"
+        ],
+        "summary": "PostCreateOrUpdateVehicle",
+        "description": "Create a new vehicle if the ID is not present or update an existing one if it exists.",
+        "requestBody": {
+          "description": "The vehicle to create or update",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompanyVehicle"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompanyVehicle"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompanyVehicle"
+              }
+            }
+          }
+        },
+        "responses": {
+          "500": {
+            "description": "An internal server error has occurred",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Post succesful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompanyVehicle"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A structure containing validation errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/vehicle/reset/{lockingType}": {
+      "post": {
+        "tags": [
+          "CompanyVehicle"
+        ],
+        "summary": "ResetVehiclesAndSetLocking",
+        "description": "Reset vehicles and set Locking type: no lock, lock or interlocked",
+        "parameters": [
+          {
+            "name": "lockingType",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/LockingTypes"
+            }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "An internal server error has occurred",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "Reset successful"
+          }
+        }
+      }
+    },
+    "/computer/{personalComputerID}": {
+      "get": {
+        "tags": [
+          "PersonalComputer"
+        ],
+        "summary": "GetPcByID",
+        "description": "Shows personal computers details by its ID",
+        "parameters": [
+          {
+            "name": "personalComputerID",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "An internal server error has occurred",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Get successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonalComputer"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "PersonalComputer"
+        ],
+        "summary": "DeletePc",
+        "description": "Deletes a personal computer from the list",
+        "parameters": [
+          {
+            "name": "personalComputerId",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "An internal server error has occurred",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "Delete successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonalComputer"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/computer": {
+      "get": {
+        "tags": [
+          "PersonalComputer"
+        ],
+        "summary": "GetPersonalComputersList",
+        "description": "Get a list of all personal computers",
+        "responses": {
+          "500": {
+            "description": "An internal server error has occurred",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Get successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonalComputer"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "PersonalComputer"
+        ],
+        "summary": "PostCreateOrUpdatePc",
+        "description": "Create a new personal computer if the ID is not present or update an existing one if it exists.",
+        "requestBody": {
+          "description": "The personal computer to create or update",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PersonalComputer"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PersonalComputer"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/PersonalComputer"
+              }
+            }
+          }
+        },
+        "responses": {
+          "500": {
+            "description": "An internal server error has occurred",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Post successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonalComputer"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A structure containing validation errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/computer/reset/{lockingType}": {
+      "post": {
+        "tags": [
+          "PersonalComputer"
+        ],
+        "summary": "ResetPcAndSetLocking",
+        "description": "Reset the pc's list and sets Locking Type: no lock, lock and interlocked",
+        "parameters": [
+          {
+            "name": "lockingType",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/LockingTypes"
+            }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "An internal server error has occurred",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "Reset successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/weather/forecast": {
+      "get": {
+        "tags": [
+          "WeatherForecast"
+        ],
+        "summary": "GetForecast",
+        "description": "Post a forecast",
+        "responses": {
+          "500": {
+            "description": "An internal server error has occurred",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Returns a list of `WeatherForecast`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WeatherForecast"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "WeatherForecast"
+        ],
+        "summary": "PostForecast",
+        "description": "Post a forecast",
+        "requestBody": {
+          "description": "Forecast of the weather",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WeatherForecast"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WeatherForecast"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/WeatherForecast"
+              }
+            }
+          }
+        },
+        "responses": {
+          "500": {
+            "description": "An internal server error has occurred",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Post successful"
+          }
+        }
+      }
+    },
+    "/weather/forecast/inline": {
+      "post": {
+        "tags": [
+          "WeatherForecast"
+        ],
+        "summary": "PostForecastInline",
+        "description": "Post a forecast with **inline data**",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "description": "Date of the forecast",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "temperatureC",
+            "in": "query",
+            "description": "Temperature in C",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "summary",
+            "in": "query",
+            "description": "Description of the forecast",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "An internal server error has occurred",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Post successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WeatherForecast"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A string containing validation errors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CompanyVehicle": {
+        "required": [
+          "vehicleisActive",
+          "vehicleType",
+          "vehicleYearOfProduction"
+        ],
+        "type": "object",
+        "properties": {
+          "vehicleID": {
+            "type": "integer",
+            "description": "ID of the vehicle",
+            "format": "int32"
+          },
+          "vehicleType": {
+            "$ref": "#/components/schemas/VehicleTypes"
+          },
+          "vehicleYearOfProduction": {
+            "type": "integer",
+            "description": "Year the vehicle was registered",
+            "format": "int32"
+          },
+          "vehicleisActive": {
+            "type": "boolean",
+            "description": "The vehicle is currently in use or decommissioned"
+          },
+          "vehicleKm": {
+            "type": "number",
+            "description": "Km travelled by the vehicle (if it is a car or truck)",
+            "format": "double",
+            "nullable": true
+          },
+          "vehicleWorkingHours": {
+            "type": "integer",
+            "description": "Hours worked by the vehicle (if it is a cruise or tractor)",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "CompanyVehicle"
+      },
+      "ErrorResponse": {
+        "required": [
+          "message",
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "integer",
+            "description": "HTTP status code (e.g. 404, 400, 500)",
+            "format": "int32"
+          },
+          "message": {
+            "minLength": 1,
+            "type": "string",
+            "description": "Error message explaining what went wrong"
+          },
+          "validationErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "description": "Optional list of validation errors.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents a standard error response returned by the API."
+      },
+      "LockingTypes": {
+        "enum": [
+          "NoLock",
+          "Lock",
+          "Interlocked"
+        ],
+        "type": "string",
+        "description": "Locking Types"
+      },
+      "PersonalComputer": {
+        "required": [
+          "pcCPU",
+          "pcModelName",
+          "pcRamInGB",
+          "pcStorage"
+        ],
+        "type": "object",
+        "properties": {
+          "personalComputerID": {
+            "type": "integer",
+            "description": "ID of the personal computer",
+            "format": "int32"
+          },
+          "pcModelName": {
+            "minLength": 1,
+            "type": "string",
+            "description": "Name or model of the computer"
+          },
+          "pcRamInGB": {
+            "type": "integer",
+            "description": "Installed RAM in gigabytes.",
+            "format": "int32"
+          },
+          "pcCPU": {
+            "minLength": 1,
+            "type": "string",
+            "description": "Processor type"
+          },
+          "pcStorage": {
+            "minLength": 1,
+            "type": "string",
+            "description": "Type and size of the main storage"
+          }
+        },
+        "additionalProperties": false,
+        "description": "PersonalComputer"
+      },
+      "ValidationError": {
+        "type": "object",
+        "properties": {
+          "propertyName": {
+            "type": "string",
+            "description": "The name of the property that failed validation.",
+            "nullable": true
+          },
+          "errorMessage": {
+            "type": "string",
+            "description": "A human-readable description of the validation error.",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents a validation error for a specific input property."
+      },
+      "VehicleTypes": {
+        "enum": [
+          "Car",
+          "Truck",
+          "Cruise",
+          "Tractor"
+        ],
+        "type": "string",
+        "description": "Types of company vehicles.\r\n\r\n- `Car`: car\r\n- `Truck`: truck\r\n- `Cruise`: cruise\r\n- `Tractor`: tractor"
+      },
+      "WeatherForecast": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "description": "Date of forecast",
+            "format": "date"
+          },
+          "temperatureC": {
+            "type": "integer",
+            "description": "Temperature in C",
+            "format": "int32"
+          },
+          "temperatureF": {
+            "type": "integer",
+            "description": "Temperature in F",
+            "format": "int32",
+            "readOnly": true
+          },
+          "summary": {
+            "maxLength": 50,
+            "type": "string",
+            "description": "Description of the forecast",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "Weather Forecast information"
+      }
+    }
+  }
+}

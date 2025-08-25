@@ -1,0 +1,54 @@
+﻿<Window x:Class="WpfTest.Properties"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WpfTest"
+        mc:Ignorable="d"
+        Title="Properties" Height="700" Width="800">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition></RowDefinition>
+            <RowDefinition></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition></ColumnDefinition>
+           
+        </Grid.ColumnDefinitions>
+    <StackPanel Orientation="Vertical" Grid.Row="0">
+
+        <Button x:Name="btnDarkMode" Content="Dark Mode" Width="70" Height="50" Click="btnDarkMode_Click" Margin="10"></Button>
+        <Button x:Name="btnLightMode" Content="Light Mode" Width="70" Height="50" Click="btnLightMode_Click" Margin="10"></Button>
+        <Button x:Name="btnLoginTime" Content="Login Time" Width="70" Height="50" Click="btnLoginTime_Click" Background="LightBlue" Margin="10"></Button>
+    </StackPanel>
+        <StackPanel Grid.Row="0" Grid.Column="2" HorizontalAlignment="Left" Margin="10">
+
+            <Label Content="Inserisci percorso cartella da computer:"></Label>
+            <Button x:Name="btnCerca1" Content="Cerca cartella" Width="100" Height="30" Click="btnCerca1_Click" Margin="10" Background="LightBlue"></Button>
+            <TextBox x:Name="txtInput0" Width="200" Height="30" Background="Beige"></TextBox>
+        </StackPanel>
+        <StackPanel Grid.Row="1" Grid.Column="0" HorizontalAlignment="Left" Margin="10">
+        
+        <Label Content="Inserisci percorso file di testo da computer:"></Label>
+        <Button x:Name="btnCerca" Content="Cerca file txt" Width="100" Height="30" Click="btnCerca_Click" Margin="10" Background="LightBlue"></Button>
+        <TextBox x:Name="txtInput" Width="200" Height="30" Background="Beige"></TextBox>
+    </StackPanel>
+        <StackPanel Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left" Margin="10">
+
+            <Label Content="Scrivi testo da salvare:"></Label>
+            <TextBox x:Name="txtInput2" Width="200" Height="200" Background="Beige" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" AcceptsReturn="True"></TextBox>
+            <Button x:Name="btnSalva" Content="Salva" Width="70" Height="30" Margin="10" Click="btnSalva_Click" Background="LightBlue"></Button>
+        </StackPanel>
+        <StackPanel Grid.Row="1" Grid.Column="2" HorizontalAlignment="Left" Margin="10">
+
+            <Label Content="Scrivi testo da stampare:"></Label>
+            <TextBox x:Name="txtInput3" Width="200" Height="200" Background="Beige" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" AcceptsReturn="True"></TextBox>
+            <Button x:Name="btnStampa" Content="Stampa screen" Width="90" Height="30" Margin="10" Click="btnStampa_Click" Background="LightBlue"></Button>
+            <Button x:Name="btnStampaDoc" Content="Stampa testo" Width="80" Height="30" Click="btnStampaDoc_Click" Background="LightBlue"></Button>
+        </StackPanel>
+       
+    </Grid>
+</Window>

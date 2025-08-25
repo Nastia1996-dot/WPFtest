@@ -1,0 +1,132 @@
+﻿<Window x:Class="WpfTest.MainWindowLogged"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WpfTest"
+        mc:Ignorable="d"
+        WindowStartupLocation="CenterScreen"
+        Title="MainWindowLogged"  Height="500" Width="700">
+    <DockPanel>
+        <!--================================BARRA DI MENU===================================-->
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="FILE"></MenuItem>
+            <MenuItem Header="EDIT"></MenuItem>
+            <MenuItem Header="VIEW"></MenuItem>
+            <MenuItem Header="PROJECT"></MenuItem>
+            <MenuItem Header="BUILD"></MenuItem>
+            <MenuItem Header="DEBUG"></MenuItem>
+            <MenuItem Header="TOOLS"></MenuItem>
+            <MenuItem Header="TEST"></MenuItem>
+            <MenuItem Header="WINDOW"></MenuItem>
+            <MenuItem Header="HELP"></MenuItem>
+        </Menu>
+
+        <!--================================BARRA LATERALE DESTRA===================================-->
+        <StackPanel Name="btnBar" Orientation="Horizontal" DockPanel.Dock="Right">
+            <StackPanel.LayoutTransform>
+                <RotateTransform Angle="90"></RotateTransform>
+            </StackPanel.LayoutTransform>
+            <Button Name="btnpane1" MouseEnter="btnpane1_MouseEnter" >Toolbox</Button>
+            <Button Name="btnpane2" MouseEnter="btnpane2_MouseEnter">Solution explorer</Button>
+        </StackPanel>
+
+
+        <!--===================================CONTENUTO PRINCIPALE===================================-->
+        <Grid Name="parentGrid" DockPanel.Dock="Bottom" Grid.IsSharedSizeScope="True">
+
+            <Grid Name="layer0" Background="LightBlue" MouseEnter="layer0_MouseEnter">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"></RowDefinition>
+                    <RowDefinition Height="2*"></RowDefinition>
+                    <RowDefinition Height="2*"></RowDefinition>
+                    <RowDefinition Height="2*"></RowDefinition>
+                </Grid.RowDefinitions>
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                    <ColumnDefinition Width="5*"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+
+                <Label Grid.ColumnSpan="2" Content="Start Page" FontSize="30" Background="Black" Foreground="White"  HorizontalContentAlignment="Center" Grid.Row="0" Grid.Column="0"/>
+                <GroupBox Grid.Row="1" Grid.Column="0" Background="White" Header="Start">...</GroupBox>
+                <GroupBox Grid.Row="2" Grid.Column="0" Background="White" Header="Recent">...</GroupBox>
+                <GroupBox Grid.Row="3" Grid.Column="0" Background="White" Header="Options">...</GroupBox>
+
+                <GroupBox Grid.RowSpan="3" Grid.Row="1" Grid.Column="1" Background="White" Header="Get Started">
+                    <ListBox>
+                        <ListBoxItem x:Name="DragDropPage" MouseDoubleClick="DragDropPage_MouseDoubleClick">#1 DragAndDrop </ListBoxItem>
+                        <ListBoxItem x:Name="KeyboardEvents" MouseDoubleClick="KeyboardEvents_MouseDoubleClick">#2 KeyboardEventHandler</ListBoxItem>
+                        <ListBoxItem x:Name="Commands" MouseDoubleClick="Commands_MouseDoubleClick">#3 Properties</ListBoxItem>
+                        <ListBoxItem x:Name="NavBar" MouseDoubleClick="NavBar_MouseDoubleClick">#4 Navigation bar</ListBoxItem>
+                    </ListBox>
+                </GroupBox>
+            </Grid>
+
+            <!--==================LAYER 1==================-->
+            <Grid x:Name="layer1" Visibility="Collapsed" HorizontalAlignment="Right" MouseLeave="layer1_MouseLeave">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="5*"></ColumnDefinition>
+                    <ColumnDefinition Width="*" SharedSizeGroup="column1"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto"></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+
+                <DockPanel Name="pane1" Grid.Row="0" MouseEnter="pane1_MouseEnter">
+
+                    <TextBlock Padding="8" TextTrimming="CharacterEllipsis" Background="LightBlue" Foreground="{DynamicResource {x:Static SystemColors.ActiveCaptionTextBrushKey}}" DockPanel.Dock="Left">
+                        ToolBox
+                    </TextBlock>
+                    <Button Name="pane1Pin" Width="26" DockPanel.Dock="Right" Click="pane1Pin_Click" Background="White">
+                        <Image Name="pane1PinImg" Source="/Resources/pinHorizontal.png"></Image>
+                    </Button>
+                </DockPanel>
+                <ListBox Grid.Row="1">
+                    <ListBoxItem>Button</ListBoxItem>
+                    <ListBoxItem>CheckBox</ListBoxItem>
+                    <ListBoxItem>ComboBox</ListBoxItem>
+                    <ListBoxItem>Label</ListBoxItem>
+                    <ListBoxItem>ListBox</ListBoxItem>
+                </ListBox>
+
+                <GridSplitter Width="5" Grid.Column="1" HorizontalAlignment="Left"></GridSplitter>
+
+            </Grid>
+
+            <!--==================LAYER 2==================-->
+            <Grid x:Name="layer2" Visibility="Collapsed" HorizontalAlignment="Right" MouseLeave="layer2_MouseLeave">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="5*"></ColumnDefinition>
+                    <ColumnDefinition Width="*" SharedSizeGroup="column2"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto"></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+
+                <DockPanel Name="pane2" Grid.Row="0" MouseEnter="pane2_MouseEnter">
+
+                    <TextBlock Padding="8" TextTrimming="CharacterEllipsis" Background="LightBlue" Foreground="{DynamicResource {x:Static SystemColors.ActiveCaptionTextBrushKey}}" DockPanel.Dock="Left">
+             Solution Explorer
+                    </TextBlock>
+                    <Button Name="pane2Pin" Width="26" DockPanel.Dock="Right" Click="pane2Pin_Click" Background="White">
+                        <Image Name="pane2PinImg" Source="/Resources/pinHorizontal.png"></Image>
+                    </Button>
+                </DockPanel>
+                <ListBox Grid.Row="1">
+                    <ListBoxItem>MySolution</ListBoxItem>
+
+                </ListBox>
+
+                <GridSplitter Width="5" Grid.Column="1" HorizontalAlignment="Left"></GridSplitter>
+
+            </Grid>
+
+        </Grid>
+    </DockPanel>
+    
+</Window>
