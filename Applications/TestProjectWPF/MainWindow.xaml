@@ -4,29 +4,85 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TestProjectWPF"
+        xmlns:fa="http://schemas.fontawesome.io/icons/"
         mc:Ignorable="d"
-        Title="FinestraTest" Height="450" Width="799">
-    <StackPanel>
-        <StackPanel Orientation="Horizontal" Margin="8">
+        Title="Veicoli aziendali" Height="450" Width="800">
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top" Orientation="Vertical">
+            <Label HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Background="LightBlue" FontWeight="Bold">Veicoli aziendali</Label>
+
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
+                
+                <!--=================SEARCHBAR============-->
+                <StackPanel Orientation="Horizontal" Margin="5">
+                    <Border Background="White" CornerRadius="15" Padding="5" BorderBrush="#CCC" BorderThickness="1" VerticalAlignment="Center">
+                        <DockPanel>
+                            
+                    <TextBox x:Name="txtSearchBox"
+                                 Width="180"
+                                 BorderThickness="0"
+                                 VerticalAlignment="Center"
+                                 Foreground="Gray"
+                                 FontSize="14"
+                                 Text="Cerca per ID..."
+                             MouseEnter="txtSearchBox_MouseEnter"
+                             MouseLeave="txtSearchBox_MouseLeave"
+                                 />
+                    <Button x:Name="btnLeggiConID"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Padding="5"
+                                Cursor="Hand"
+                                Click="btnLeggiConID_Click">
+                        <fa:ImageAwesome Icon="Search" Width="18" Height="18" Foreground="#2B4C6F"/>
+                    </Button>
+                        </DockPanel>
+                    </Border>
+                </StackPanel>
+                
+                
+                <!--==============BUTTONS===============-->
+                <Button x:Name="btnLeggi" Background="AliceBlue" BorderBrush="AliceBlue" Cursor="Hand" Click="btnLeggi_Click">
+                    <StackPanel Orientation="Vertical" >
+                        <fa:ImageAwesome Icon="FolderOpen" Width="25" Height="25" Foreground="Blue"/>
+                        <TextBlock Text="Leggi" Foreground="Blue"/>
+                    </StackPanel>
+                </Button>       
+                <Button Background="AliceBlue" BorderBrush="AliceBlue" Cursor="Hand">
+                    <StackPanel Orientation="Vertical" >
+                        <fa:ImageAwesome Icon="ShareAlt" Width="25" Height="25" Foreground="Green"/>
+                        <TextBlock Text="Condividi" Foreground="Green"/>
+                    </StackPanel>
+                </Button>
+                <Button Background="AliceBlue" BorderBrush="AliceBlue" Cursor="Hand" >
+                    <StackPanel Orientation="Vertical" >
+                        <fa:ImageAwesome Icon="Filter" Width="25" Height="25" Foreground="Gray"/>
+                        <TextBlock Text="Filtri" Foreground="Gray"/>
+                    </StackPanel>
+                </Button>
+                <Button x:Name="btnInserisci"  Background="AliceBlue" BorderBrush="AliceBlue" Cursor="Hand" Click="btnInserisci_Click">
+                    <StackPanel Orientation="Vertical" >
+                        <fa:ImageAwesome Icon="PlusCircle" Width="25" Height="25" Foreground="Green"/>
+                        <TextBlock Text="Inserisci" Foreground="Green"/>
+                    </StackPanel>
+                </Button>
+                <Button  Background="AliceBlue" BorderBrush="AliceBlue" Cursor="Hand">
+                    <StackPanel Orientation="Vertical" >
+                        <fa:ImageAwesome Icon="WindowClose" Width="25" Height="25" Foreground="Red"/>
+                        <TextBlock Text="Chiudi" Foreground="Red"/>
+                    </StackPanel>
+                </Button>
+
+                
+
+            </StackPanel>
+        </StackPanel>
+
+
+        <Grid DockPanel.Dock="Bottom" ScrollViewer.HorizontalScrollBarVisibility="Visible">
             
-        </StackPanel>
-        <StackPanel Orientation="Horizontal" Margin="8">
-            <TextBox x:Name="txtSaluto" Width="400"></TextBox>
-        </StackPanel>
-    </StackPanel>
-    <!--<Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="266.333"/>
-            <ColumnDefinition Width="266.333"></ColumnDefinition>
-            <ColumnDefinition Width="266"/>
-           
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="1*"></RowDefinition>
-            <RowDefinition Height="1*"></RowDefinition>
-            <RowDefinition Height="1*"></RowDefinition>
-        </Grid.RowDefinitions>
-        <Label Content="_Nome" Target="{x:Reference box}" Grid.Column="1" Grid.Row="1"></Label>
-        <TextBox x:Name="box" Grid.Column="2" Grid.Row="1" Text="Anastasia"></TextBox>
-    </Grid>-->
+            <DataGrid ItemsSource="{Binding Vehicles}" AutoGenerateColumns="True" CanUserReorderColumns="True" CanUserResizeColumns="True" CanUserAddRows="False" IsReadOnly="True" ></DataGrid>
+        </Grid>
+    </DockPanel>
+
 </Window>

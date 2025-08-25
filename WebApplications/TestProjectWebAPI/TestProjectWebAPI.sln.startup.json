@@ -52,10 +52,11 @@
         }
     */
   "MultiProjectConfigurations": {
-    "Api + Tester": {
+    "Api + Tester + WPF": {
       "Projects": {
         "TestProjectWebAPI": {},
-        "TestProjectTester": {}
+        "TestProjectTester": {},
+        "TestProjectWPF": {}
       }
     },
     "Api": {
@@ -66,6 +67,11 @@
     "Tester": {
       "Projects": {
         "TestProjectTester": {}
+      }
+    },
+    "WPF": {
+      "Projects": {
+        "TestProjectWPF":  {}
       }
     }
   }

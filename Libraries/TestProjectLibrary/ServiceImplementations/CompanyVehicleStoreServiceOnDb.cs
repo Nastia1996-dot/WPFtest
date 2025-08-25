@@ -131,22 +131,39 @@ SELECT SCOPE_IDENTITY()
 				{
 
 					cmd.Parameters.Clear();
-					//aggiorno su db
-					cmd.CommandText = @"UPDATE NSCompanyVehicles
+					if (UseQueryParameters)
+					{
+
+						//aggiorno su db
+						cmd.CommandText = @"UPDATE NSCompanyVehicles
 SET CV_VehicleType = ? , CV_YearOfProduction = ?, CV_VehicleState= ?, CV_VehicleKm = ?, CV_WorkingHours = ? 
 WHERE CV_CompanyVehicleID = ?
 ";
 
-					//param devono esssere nello stesso ordine!!
-					cmd.Parameters.Add(CreateParam(cmd, FormatVehicleType(model.VehicleType)));
-					cmd.Parameters.Add(CreateParam(cmd, model.VehicleYearOfProduction));
-					cmd.Parameters.Add(CreateParam(cmd, FormatVehicleIsActive(model.VehicleisActive)));
-					cmd.Parameters.Add(CreateParam(cmd, (object?)model.VehicleKm ?? DBNull.Value));
-					cmd.Parameters.Add(CreateParam(cmd, (object?)model.VehicleWorkingHours ?? DBNull.Value));
-					cmd.Parameters.Add(CreateParam(cmd, model.VehicleID));
+						//param devono essere nello stesso ordine!!
+						cmd.Parameters.Add(CreateParam(cmd, FormatVehicleType(model.VehicleType)));
+						cmd.Parameters.Add(CreateParam(cmd, model.VehicleYearOfProduction));
+						cmd.Parameters.Add(CreateParam(cmd, FormatVehicleIsActive(model.VehicleisActive)));
+						cmd.Parameters.Add(CreateParam(cmd, (object?)model.VehicleKm ?? DBNull.Value));
+						cmd.Parameters.Add(CreateParam(cmd, (object?)model.VehicleWorkingHours ?? DBNull.Value));
+						cmd.Parameters.Add(CreateParam(cmd, model.VehicleID));
+					}
+
+					else
+					{
+						cmd.CommandText = $@"UPDATE NSCompanyVehicles
+SET CV_VehicleType = {GetSQLFormattedValue(FormatVehicleType(model.VehicleType))} 
+, CV_YearOfProduction = {GetSQLFormattedValue(model.VehicleYearOfProduction)}
+, CV_VehicleState= {GetSQLFormattedValue(FormatVehicleIsActive(model.VehicleisActive))}
+, CV_VehicleKm = {GetSQLFormattedValue(model.VehicleKm)}
+, CV_WorkingHours = {GetSQLFormattedValue(model.VehicleWorkingHours)} 
+WHERE CV_CompanyVehicleID = {GetSQLFormattedValue(model.VehicleID)}
+";
+					}
 					if (cmd.ExecuteNonQuery() > 0)
 					{
 						error = null;
+						transaction.Commit();
 						return true;
 					}
 					else

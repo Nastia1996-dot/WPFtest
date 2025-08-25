@@ -10,6 +10,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestProjectTester", "..\..\Applications\TestProjectTester\TestProjectTester.csproj", "{28DEA866-4180-4E04-A09F-EE058D142108}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestProjectWPF", "..\..\Applications\TestProjectWPF\TestProjectWPF.csproj", "{F8B0362B-AA4F-45AD-8238-E81C370DEDBE}"
+	ProjectSection(ProjectDependencies) = postProject
+		{28DEA866-4180-4E04-A09F-EE058D142108} = {28DEA866-4180-4E04-A09F-EE058D142108}
+		{840FD73C-5AFD-497A-A840-BAD7557F43D4} = {840FD73C-5AFD-497A-A840-BAD7557F43D4}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

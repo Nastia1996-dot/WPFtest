@@ -11,6 +11,7 @@
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="FontAwesome.WPF" Version="4.7.0.9" />
     <PackageReference Include="System.Data.OleDb" Version="9.0.7" />
   </ItemGroup>
   <ItemGroup>
